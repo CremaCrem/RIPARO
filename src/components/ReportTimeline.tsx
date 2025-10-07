@@ -1,4 +1,4 @@
-import React from "react";
+// no React import needed with modern JSX transform
 
 export type ReportStatus =
   | "pending"

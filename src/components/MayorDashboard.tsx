@@ -112,7 +112,7 @@ export default function MayorDashboard({
     date_from: string;
     date_to: string;
   }>({ status: "", type: "", date_from: "", date_to: "" });
-  const [detailReport, setDetailReport] = useState<ReportRow | null>(null);
+  // removed unused detailReport state
 
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
@@ -124,7 +124,7 @@ export default function MayorDashboard({
     date_from: string;
     date_to: string;
   }>({ date_from: "", date_to: "" });
-  const [viewFeedback, setViewFeedback] = useState<FeedbackRow | null>(null);
+  // removed unused viewFeedback state
 
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -158,7 +158,7 @@ export default function MayorDashboard({
   const [updates, setUpdates] = useState<UpdateRequestRow[]>([]);
   const [updatesLoading, setUpdatesLoading] = useState(false);
   const [updatesError, setUpdatesError] = useState<string | null>(null);
-  const [viewUpdate, setViewUpdate] = useState<UpdateRequestRow | null>(null);
+  // removed unused viewUpdate state
 
   const stats: StatCard[] = useMemo(
     () => [
