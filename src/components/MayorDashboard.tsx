@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Modal from "./Modal";
+import { API_URL } from "../config";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -227,10 +228,9 @@ export default function MayorDashboard({
           params.set("per_page", String(perPage));
           params.set("page", String(page));
           params.set("date_from", date_from);
-          const res = await fetch(
-            `http://localhost:8000/api/reports?${params.toString()}`,
-            { headers }
-          );
+          const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+            headers,
+          });
           const data = await res.json();
           const items: ReportRow[] = Array.isArray(data.data)
             ? data.data
@@ -262,7 +262,7 @@ export default function MayorDashboard({
             params.set("page", String(page));
             params.set("date_from", date_from);
             const res = await fetch(
-              `http://localhost:8000/api/feedback?${params.toString()}`,
+              `${API_URL}/feedback?${params.toString()}`,
               { headers }
             );
             const data = await res.json();
@@ -278,18 +278,16 @@ export default function MayorDashboard({
 
         // Pending users & update requests
         {
-          const res = await fetch(
-            `http://localhost:8000/api/users?status=pending`,
-            { headers }
-          );
+          const res = await fetch(`${API_URL}/users?status=pending`, {
+            headers,
+          });
           const data = await res.json();
           setPendingUsers(Array.isArray(data.users) ? data.users.length : 0);
         }
         {
-          const res = await fetch(
-            `http://localhost:8000/api/update-requests?status=pending`,
-            { headers }
-          );
+          const res = await fetch(`${API_URL}/update-requests?status=pending`, {
+            headers,
+          });
           const data = await res.json();
           setPendingUpdateRequests(
             Array.isArray(data.requests) ? data.requests.length : 0
@@ -320,10 +318,9 @@ export default function MayorDashboard({
         if (reportFilters.date_from)
           params.set("date_from", reportFilters.date_from);
         if (reportFilters.date_to) params.set("date_to", reportFilters.date_to);
-        const res = await fetch(
-          `http://localhost:8000/api/reports?${params.toString()}`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-        );
+        const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load reports");
         const items: ReportRow[] = Array.isArray(data.data)
@@ -357,10 +354,9 @@ export default function MayorDashboard({
           params.set("date_from", feedbackFilters.date_from);
         if (feedbackFilters.date_to)
           params.set("date_to", feedbackFilters.date_to);
-        const res = await fetch(
-          `http://localhost:8000/api/feedback?${params.toString()}`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-        );
+        const res = await fetch(`${API_URL}/feedback?${params.toString()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         if (!res.ok)
           throw new Error(data?.message || "Failed to load feedback");
@@ -388,7 +384,7 @@ export default function MayorDashboard({
       setUsersError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(`http://localhost:8000/api/users?status=all`, {
+        const res = await fetch(`${API_URL}/users?status=all`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -411,7 +407,7 @@ export default function MayorDashboard({
       setUpdatesError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(`http://localhost:8000/api/update-requests`, {
+        const res = await fetch(`${API_URL}/update-requests`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();

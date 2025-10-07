@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import Modal from "./Modal";
+import { API_URL } from "../config";
 import ReportCard from "./ReportCard";
 import ReportTimeline from "./ReportTimeline";
 
@@ -59,7 +60,7 @@ export default function CitizenDashboard({
       setReportsError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch("http://localhost:8000/api/my-reports", {
+        const res = await fetch(`${API_URL}/my-reports`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -172,14 +173,11 @@ export default function CitizenDashboard({
                 (async () => {
                   try {
                     const token = localStorage.getItem("auth_token") || "";
-                    const res = await fetch(
-                      "http://localhost:8000/api/my-reports",
-                      {
-                        headers: token
-                          ? { Authorization: `Bearer ${token}` }
-                          : {},
-                      }
-                    );
+                    const res = await fetch(`${API_URL}/my-reports`, {
+                      headers: token
+                        ? { Authorization: `Bearer ${token}` }
+                        : {},
+                    });
                     const data = await res.json();
                     if (res.ok)
                       setMyReports(
@@ -503,7 +501,7 @@ function SubmitReport({
       }
 
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch("http://localhost:8000/api/reports", {
+      const res = await fetch(`${API_URL}/reports`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: fd,
@@ -913,7 +911,7 @@ function FeedbackForm({ onNotice }: { onNotice: (msg: string) => void }) {
         message: form.message,
       };
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch("http://localhost:8000/api/feedback", {
+      const res = await fetch(`${API_URL}/feedback`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1147,14 +1145,11 @@ function EditProfile() {
       if (idDoc) fd.append("id_document", idDoc);
 
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch(
-        "http://localhost:8000/api/profile/update-request",
-        {
-          method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-          body: fd,
-        }
-      );
+      const res = await fetch(`${API_URL}/profile/update-request`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Submission failed");
 

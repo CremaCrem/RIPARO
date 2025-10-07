@@ -1,5 +1,6 @@
 // RIPARO/src/components/Auth.tsx
 import { useEffect, useMemo, useState } from "react";
+import { API_URL } from "../config";
 import bgSanJose from "../assets/san_jose_bg.jpg";
 
 type Mode = "login" | "signup";
@@ -115,7 +116,7 @@ export default function Auth({
 
     try {
       if (mode === "login") {
-        const response = await fetch(`http://localhost:8000/api/login`, {
+        const response = await fetch(`${API_URL}/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -207,7 +208,7 @@ export default function Auth({
         fd.append("zone", formData.zone);
         if (idDoc) fd.append("id_document", idDoc);
 
-        const response = await fetch(`http://localhost:8000/api/register`, {
+        const response = await fetch(`${API_URL}/register`, {
           method: "POST",
           body: fd,
         });

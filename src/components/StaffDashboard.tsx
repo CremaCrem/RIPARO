@@ -19,6 +19,7 @@ ChartJS.register(
   ChartLegend
 );
 import Modal from "./Modal";
+import { API_URL } from "../config";
 
 type StaffTab =
   | "dashboard"
@@ -190,7 +191,7 @@ export default function StaffDashboard({
       try {
         const token = localStorage.getItem("auth_token") || "";
         const qs = filter === "all" ? "" : `?status=${filter}`;
-        const res = await fetch(`http://localhost:8000/api/users${qs}`, {
+        const res = await fetch(`${API_URL}/users${qs}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -267,12 +268,9 @@ export default function StaffDashboard({
         if (reportFilters.date_from)
           params.set("date_from", reportFilters.date_from);
         if (reportFilters.date_to) params.set("date_to", reportFilters.date_to);
-        const res = await fetch(
-          `http://localhost:8000/api/reports?${params.toString()}`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
+        const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load reports");
         // Laravel paginator structure
@@ -300,10 +298,9 @@ export default function StaffDashboard({
       setUpdatesError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(
-          `http://localhost:8000/api/update-requests?status=pending`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-        );
+        const res = await fetch(`${API_URL}/update-requests?status=pending`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         if (!res.ok)
           throw new Error(data?.message || "Failed to load update requests");
@@ -361,12 +358,9 @@ export default function StaffDashboard({
           params.set("per_page", String(perPage));
           params.set("page", String(page));
           params.set("date_from", date_from);
-          const res = await fetch(
-            `http://localhost:8000/api/reports?${params.toString()}`,
-            {
-              headers,
-            }
-          );
+          const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+            headers,
+          });
           const data = await res.json();
           const items: ReportRow[] = Array.isArray(data.data)
             ? data.data
@@ -399,7 +393,7 @@ export default function StaffDashboard({
             params.set("page", String(page));
             params.set("date_from", date_from);
             const res = await fetch(
-              `http://localhost:8000/api/feedback?${params.toString()}`,
+              `${API_URL}/feedback?${params.toString()}`,
               {
                 headers,
               }
@@ -417,10 +411,9 @@ export default function StaffDashboard({
 
         // Pending users (unverified)
         {
-          const res = await fetch(
-            `http://localhost:8000/api/users?status=pending`,
-            { headers }
-          );
+          const res = await fetch(`${API_URL}/users?status=pending`, {
+            headers,
+          });
           const data = await res.json();
           const items: any[] = Array.isArray(data.users) ? data.users : [];
           setPendingUsers(items.length);
@@ -428,10 +421,9 @@ export default function StaffDashboard({
 
         // Pending profile update requests
         {
-          const res = await fetch(
-            `http://localhost:8000/api/update-requests?status=pending`,
-            { headers }
-          );
+          const res = await fetch(`${API_URL}/update-requests?status=pending`, {
+            headers,
+          });
           const data = await res.json();
           const items: any[] = Array.isArray(data.requests)
             ? data.requests
@@ -462,12 +454,9 @@ export default function StaffDashboard({
           params.set("date_from", feedbackFilters.date_from);
         if (feedbackFilters.date_to)
           params.set("date_to", feedbackFilters.date_to);
-        const res = await fetch(
-          `http://localhost:8000/api/feedback?${params.toString()}`,
-          {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }
-        );
+        const res = await fetch(`${API_URL}/feedback?${params.toString()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const data = await res.json();
         if (!res.ok)
           throw new Error(data?.message || "Failed to load feedback");
@@ -490,7 +479,7 @@ export default function StaffDashboard({
   const openReportDetail = async (id: number) => {
     try {
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch(`http://localhost:8000/api/reports/${id}`, {
+      const res = await fetch(`${API_URL}/reports/${id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const data = await res.json();
@@ -1062,7 +1051,7 @@ export default function StaffDashboard({
                         setUpdatesLoading(true);
                         const token = localStorage.getItem("auth_token") || "";
                         const res = await fetch(
-                          `http://localhost:8000/api/update-requests?status=pending`,
+                          `${API_URL}/update-requests?status=pending`,
                           {
                             headers: token
                               ? { Authorization: `Bearer ${token}` }
@@ -1195,14 +1184,9 @@ export default function StaffDashboard({
                 try {
                   const token = localStorage.getItem("auth_token") || "";
                   const qs = filter === "all" ? "" : `?status=${filter}`;
-                  const res = await fetch(
-                    `http://localhost:8000/api/users${qs}`,
-                    {
-                      headers: token
-                        ? { Authorization: `Bearer ${token}` }
-                        : {},
-                    }
-                  );
+                  const res = await fetch(`${API_URL}/users${qs}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  });
                   const data = await res.json();
                   if (res.ok)
                     setUsers(Array.isArray(data.users) ? data.users : []);
@@ -1234,7 +1218,7 @@ export default function StaffDashboard({
                 if (reportFilters.date_to)
                   params.set("date_to", reportFilters.date_to);
                 const res = await fetch(
-                  `http://localhost:8000/api/reports?${params.toString()}`,
+                  `${API_URL}/reports?${params.toString()}`,
                   {
                     headers: token ? { Authorization: `Bearer ${token}` } : {},
                   }
@@ -1316,7 +1300,7 @@ export default function StaffDashboard({
                   setUpdatesLoading(true);
                   const token = localStorage.getItem("auth_token") || "";
                   const res = await fetch(
-                    `http://localhost:8000/api/update-requests?status=pending`,
+                    `${API_URL}/update-requests?status=pending`,
                     {
                       headers: token
                         ? { Authorization: `Bearer ${token}` }
@@ -1510,17 +1494,14 @@ function UserDetailsModal({
     try {
       setSaving(true);
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch(
-        `http://localhost:8000/api/users/${user.id}/verification`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ action }),
-        }
-      );
+      const res = await fetch(`${API_URL}/users/${user.id}/verification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed");
       onUpdated();
@@ -1629,17 +1610,14 @@ function ReportDetailsModal({
       setSaving(true);
       setError(null);
       const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch(
-        `http://localhost:8000/api/reports/${report.id}/progress`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ progress }),
-        }
-      );
+      const res = await fetch(`${API_URL}/reports/${report.id}/progress`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ progress }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update");
       onProgressChanged(progress);
@@ -1660,7 +1638,7 @@ function ReportDetailsModal({
       if (markResolved) fd.append("mark_resolved", "1");
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(
-        `http://localhost:8000/api/reports/${report.id}/resolution-photos`,
+        `${API_URL}/reports/${report.id}/resolution-photos`,
         {
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -1838,7 +1816,7 @@ function UpdateRequestModal({
       setError(null);
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(
-        `http://localhost:8000/api/update-requests/${request.id}/review`,
+        `${API_URL}/update-requests/${request.id}/review`,
         {
           method: "POST",
           headers: {
@@ -1864,7 +1842,7 @@ function UpdateRequestModal({
       setError(null);
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(
-        `http://localhost:8000/api/update-requests/${request.id}/review`,
+        `${API_URL}/update-requests/${request.id}/review`,
         {
           method: "POST",
           headers: {
