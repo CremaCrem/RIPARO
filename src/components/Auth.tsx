@@ -210,6 +210,7 @@ export default function Auth({
 
         const response = await fetch(`${API_URL}/register`, {
           method: "POST",
+          headers: { Accept: "application/json" },
           body: fd,
         });
 
