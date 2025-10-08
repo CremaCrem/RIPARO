@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { API_URL } from "../config";
 import bgSanJose from "../assets/san_jose_bg.jpg";
+import RIPARO_Logo from "../assets/RIPARO_Logo.png";
 
 type Mode = "login" | "signup";
 
@@ -87,27 +88,46 @@ export default function Auth({
     return "Sign in to RIPARO to file, track, and follow up reports to your LGU.";
   }, [mode, role]);
 
-  // Role-based visual theming and cues (Philippine flag colors)
+  // Role-based visual theming inspired by Camarines Sur and Philippine government
   const theme = useMemo(() => {
     const common = {
-      bannerBg: "bg-[#0038A8]/20 border-[#0038A8]/30", // blue
-      chipBg: "bg-[#FCD116]", // yellow
-      chipText: "text-[#1f2937]", // slate-800 for readability
-      ring: "ring-2 ring-[#FCD116]/40",
-      glow: "shadow-[0_0_80px_10px_rgba(0,56,168,0.15)]",
-      navActive: "text-white font-semibold border-b-2 border-[#FCD116]",
-      stripBg: "bg-[#0038A8]",
+      bannerBg:
+        "bg-gradient-to-r from-[#0038A8]/10 to-[#CE1126]/10 border-[#0038A8]/20",
+      chipBg: "bg-gradient-to-r from-[#FCD116] to-[#FFD700]",
+      chipText: "text-[#1f2937] font-semibold",
+      ring: "ring-2 ring-[#0038A8]/20",
+      glow: "shadow-[0_0_40px_8px_rgba(0,56,168,0.08)]",
+      navActive:
+        "text-white font-semibold border-b-2 border-[#FCD116] bg-[#0038A8]/20",
+      stripBg: "bg-gradient-to-r from-[#0038A8] to-[#1e40af]",
       stripText: "text-white",
+      icon: "",
+      accent: "text-[#0038A8]",
     } as const;
 
     if (role === "admin")
-      return { ...common, label: "Admin Portal", emoji: "🛡️" } as const;
+      return {
+        ...common,
+        label: "Administrative Portal",
+        icon: "⚖️",
+        description: "Manage and oversee municipal operations",
+      } as const;
     if (role === "mayor")
-      return { ...common, label: "Mayor Portal", emoji: "🏛️" } as const;
-    return { ...common, label: "Citizen Portal", emoji: "☀️" } as const; // sun for citizens
+      return {
+        ...common,
+        label: "Mayor's Dashboard",
+        icon: "🏛️",
+        description: "Executive oversight and decision making",
+      } as const;
+    return {
+      ...common,
+      label: "Citizen Portal",
+      icon: "👥",
+      description: "Submit reports and track municipal services",
+    } as const;
   }, [role]);
 
-  const isSignup = allowSignup && mode === "signup";
+  // Removed isSignup variable - using mode === "signup" directly
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,516 +265,655 @@ export default function Auth({
   };
 
   return (
-    <div className="relative min-h-screen w-full text-white flex flex-col">
-      {/* Background image */}
+    <div className="relative h-screen w-full flex flex-col overflow-hidden">
+      {/* Background image with Philippine flag overlay */}
       <div
         className="absolute inset-0 -z-10 bg-cover bg-center"
         style={{ backgroundImage: `url(${bgSanJose})` }}
       />
-      {/* Philippine flag overlay: blue to red with subtle vignette */}
+      {/* Philippine flag overlay: blue to red with translucent effect */}
       <div className="absolute inset-0 -z-[9] bg-gradient-to-br from-[#0038A8]/85 via-[#0038A8]/50 to-[#CE1126]/85" />
       <div className="absolute inset-0 -z-[8] bg-black/10" />
 
-      <header className="px-6 md:px-10 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-[#FCD116] flex items-center justify-center text-[#0038A8] font-black">
-            RP
+      {/* Decorative elements inspired by Filipino architecture */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#CE1126] via-[#FCD116] to-[#0038A8]" />
+
+      <header className="px-6 md:px-12 py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <img
+                src={RIPARO_Logo}
+                alt="RIPARO Logo"
+                className="h-12 w-12 object-contain"
+                onError={(e) => {
+                  // Fallback to text logo if image fails to load
+                  const target = e.currentTarget as HTMLImageElement;
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (target) target.style.display = "none";
+                  if (fallback) fallback.style.display = "flex";
+                }}
+              />
+              <div
+                className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                style={{ display: "none" }}
+              >
+                R
+              </div>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800 leading-none">
+                RIPARO
+              </h1>
+              <p className="text-sm text-slate-600 leading-none mt-1 font-medium">
+                Report • Process • Resolve
+              </p>
+              <p className="text-xs text-slate-500 leading-none mt-0.5">
+                Barangay San Jose, Camarines Sur
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-semibold leading-none">RIPARO</p>
-            <p className="text-xs text-white/70 leading-none mt-0.5">
-              Report. Process. Resolve.
-            </p>
-          </div>
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+            <a
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                role === "citizen"
+                  ? "bg-[#0038A8] text-white shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-[#0038A8] hover:bg-white/50"
+              }`}
+              href="#/login/citizen"
+            >
+              Citizen Portal
+            </a>
+            <a
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                role === "mayor"
+                  ? "bg-[#0038A8] text-white shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-[#0038A8] hover:bg-white/50"
+              }`}
+              href="#/login/mayor"
+            >
+              Mayor's Office
+            </a>
+            <a
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+                role === "admin"
+                  ? "bg-[#0038A8] text-white shadow-sm font-semibold"
+                  : "text-slate-600 hover:text-[#0038A8] hover:bg-white/50"
+              }`}
+              href="#/login/admin"
+            >
+              Administration
+            </a>
+          </nav>
         </div>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-white/80">
-          <a
-            className={`transition-colors hover:text-white ${
-              role === "citizen" ? theme.navActive : ""
-            }`}
-            href="#/login/citizen"
-          >
-            Citizen
-          </a>
-          <a
-            className={`transition-colors hover:text-white ${
-              role === "mayor" ? theme.navActive : ""
-            }`}
-            href="#/login/mayor"
-          >
-            Mayor
-          </a>
-          <a
-            className={`transition-colors hover:text-white ${
-              role === "admin" ? theme.navActive : ""
-            }`}
-            href="#/login/admin"
-          >
-            Admin
-          </a>
-        </nav>
       </header>
 
       {/* Role banner */}
-      <div className="px-6 md:px-10">
-        <div
-          className={`mx-auto w-full max-w-6xl mb-3 rounded-xl border ${theme.bannerBg} ${theme.glow}`}
-        >
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white">
-              <span className="text-lg">{theme.emoji}</span>
-              <span className="text-sm font-semibold tracking-wide">
-                You are in the {theme.label}
-              </span>
+      <div className="px-6 md:px-12 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
+            <div className="bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
+                    <span className="text-xl">{theme.icon}</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white">
+                      {theme.label}
+                    </h2>
+                    <p className="text-sm text-white/80">{theme.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-[#FCD116]" />
+                  <div className="h-2 w-2 rounded-full bg-white/40" />
+                  <div className="h-2 w-2 rounded-full bg-white/40" />
+                </div>
+              </div>
             </div>
-            <span
-              className={`px-2.5 py-1 rounded-full text-xs ${theme.chipBg} ${theme.chipText}`}
-            >
-              {role?.toUpperCase()}
-            </span>
           </div>
         </div>
       </div>
 
-      <main className="px-6 md:px-10 py-6 flex-1">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 lg:grid-cols-2 gap-8">
-          {!isSignup && (
-            <section className="hidden lg:flex flex-col justify-center">
-              <div className="relative">
-                <h1 className="mt-0 text-4xl xl:text-5xl font-extrabold tracking-tight leading-tight">
-                  Reporting System of Barangay San Jose, Camarines Sur.
-                  <br />
-                  <span className="text-white/90">Making Reporting Easier</span>
-                </h1>
-
-                <p className="mt-4 text-white/80 text-base leading-relaxed max-w-prose">
-                  Submit reports about infrastructure, public safety, and
-                  community concerns. Your barangay receives, validates, and
-                  acts.
-                </p>
-              </div>
-            </section>
-          )}
-
-          <section
-            className={`flex items-center ${isSignup ? "lg:col-span-2" : ""}`}
-          >
-            <div className="w-full">
-              <div
-                className={`mx-auto w-full ${
-                  isSignup ? "max-w-4xl" : "max-w-md"
-                } rounded-2xl border border-slate-200 bg-white p-6 ${
-                  theme.ring
-                }`}
-              >
-                {/* Role strip */}
-                <div
-                  className={`-mx-6 -mt-6 px-6 py-2 rounded-t-2xl flex items-center gap-2 ${theme.stripBg} ${theme.stripText}`}
-                >
-                  <span className="text-base">{theme.emoji}</span>
-                  <span className="text-xs uppercase tracking-wider font-semibold">
-                    {theme.label}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-                  <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1">
-                    <button
-                      className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                        mode === "login"
-                          ? "bg-[#0038A8] text-white font-semibold"
-                          : "text-slate-700 hover:bg-[#0038A8]/10"
-                      }`}
-                      onClick={() => {
-                        setMode("login");
-                        setErrors({});
-                        setFormData({
-                          first_name: "",
-                          middle_name: "",
-                          last_name: "",
-                          email: "",
-                          password: "",
-                          mobile_number: "",
-                          barangay: "",
-                          zone: "",
-                        });
-                        setIdDoc(null);
-                        if (idPreview) URL.revokeObjectURL(idPreview);
-                        setIdPreview(null);
-                      }}
-                    >
-                      Log in
-                    </button>
-                    {allowSignup && (
-                      <button
-                        className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                          mode === "signup"
-                            ? "bg-[#0038A8] text-white font-semibold"
-                            : "text-slate-700 hover:bg-[#0038A8]/10"
-                        }`}
-                        onClick={() => {
-                          setMode("signup");
-                          setErrors({});
-                          setFormData({
-                            first_name: "",
-                            middle_name: "",
-                            last_name: "",
-                            email: "",
-                            password: "",
-                            mobile_number: "",
-                            barangay: "",
-                            zone: "",
-                          });
-                          setIdDoc(null);
-                          if (idPreview) URL.revokeObjectURL(idPreview);
-                          setIdPreview(null);
-                        }}
-                      >
-                        Sign up
-                      </button>
-                    )}
+      <main className="px-6 md:px-12 py-6 flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+            {mode !== "signup" && (
+              <section className="hidden lg:flex flex-col justify-center">
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
+                      Digital Governance for
+                      <span className="block text-[#FCD116]">
+                        Barangay San Jose
+                      </span>
+                    </h1>
+                    <p className="text-lg text-white/90 leading-relaxed">
+                      A modern reporting system connecting citizens with local
+                      government in Camarines Sur. Submit, track, and resolve
+                      community concerns efficiently.
+                    </p>
                   </div>
                 </div>
+              </section>
+            )}
 
-                <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
-
-                {/* Helper text */}
-                {allowSignup && mode === "signup" && (
-                  <div className="mt-3 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
-                    Please complete all fields marked with{" "}
-                    <span className="text-red-500">*</span>. A valid ID upload
-                    is required for signup.
+            <section className={`${mode === "signup" ? "lg:col-span-2" : ""}`}>
+              <div className="w-full max-w-md mx-auto lg:max-w-none">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden">
+                  <div className="px-8 py-6 border-b border-slate-100">
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-800">
+                        {title}
+                      </h2>
+                      <p className="text-slate-600 mt-1">{subtitle}</p>
+                    </div>
                   </div>
-                )}
 
-                <form className="mt-4 grid gap-3" onSubmit={handleSubmit}>
+                  {/* Helper text */}
                   {allowSignup && mode === "signup" && (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <label
-                          className={`block ${
-                            errors.first_name ? "shake" : ""
-                          }`}
-                        >
-                          <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-                            First name
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Juan"
-                            value={formData.first_name}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                first_name: e.target.value,
-                              })
-                            }
-                            className={`w-full rounded-lg border px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 transition ${
-                              errors.first_name
-                                ? "border-red-400 bg-red-50"
-                                : "border-slate-300 bg-white focus:border-slate-400"
-                            }`}
-                          />
-                          {errors.first_name && (
-                            <p className="mt-1 text-xs text-red-600">
-                              {errors.first_name}
-                            </p>
-                          )}
-                        </label>
-                        <label className="block">
-                          <span className="mb-1 block text-sm text-slate-700">
-                            Middle name (optional)
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Santos"
-                            value={formData.middle_name || ""}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                middle_name: e.target.value,
-                              })
-                            }
-                            className="w-full rounded-lg border px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 transition border-slate-300 bg-white focus:border-slate-400"
-                          />
-                        </label>
-                        <label
-                          className={`block ${errors.last_name ? "shake" : ""}`}
-                        >
-                          <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-                            Last name
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Dela Cruz"
-                            value={formData.last_name}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                last_name: e.target.value,
-                              })
-                            }
-                            className={`w-full rounded-lg border px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 transition ${
-                              errors.last_name
-                                ? "border-red-400 bg-red-50"
-                                : "border-slate-300 bg-white focus:border-slate-400"
-                            }`}
-                          />
-                          {errors.last_name && (
-                            <p className="mt-1 text-xs text-red-600">
-                              {errors.last_name}
-                            </p>
-                          )}
-                        </label>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Input
-                          label="Email address"
-                          type="email"
-                          placeholder="you@example.com"
-                          value={formData.email}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                          error={errors.email}
-                          requiredAsterisk
-                          shake={!!errors.email}
-                        />
-                        <Input
-                          label="Mobile number"
-                          type="tel"
-                          placeholder="09xx xxx xxxx"
-                          value={formData.mobile_number}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              mobile_number: e.target.value,
-                            })
-                          }
-                          error={errors.mobile_number}
-                          requiredAsterisk
-                          shake={!!errors.mobile_number}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <Input
-                          label="Barangay"
-                          type="text"
-                          placeholder="San Jose"
-                          value={formData.barangay}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              barangay: e.target.value,
-                            })
-                          }
-                          error={errors.barangay}
-                          requiredAsterisk
-                        />
-                        <Input
-                          label="Zone"
-                          type="text"
-                          placeholder="Zone 1"
-                          value={formData.zone}
-                          onChange={(e) =>
-                            setFormData({ ...formData, zone: e.target.value })
-                          }
-                          error={errors.zone}
-                          requiredAsterisk
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3 items-start">
-                        <label className="mb-1.5 block text-sm text-slate-700 required-asterisk">
-                          Upload valid ID
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const f = e.target.files?.[0] || null;
-                              if (idPreview) URL.revokeObjectURL(idPreview);
-                              setIdDoc(f);
-                              setIdPreview(f ? URL.createObjectURL(f) : null);
-                            }}
-                            className="w-full rounded-lg border px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 transition border-slate-300 bg-white focus:border-slate-400"
-                          />
-                          {idDoc && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (idPreview) URL.revokeObjectURL(idPreview);
-                                setIdDoc(null);
-                                setIdPreview(null);
-                              }}
-                              className="rounded-md bg-red-50 px-2 py-1 text-xs text-red-600 border border-red-200"
-                            >
-                              Remove
-                            </button>
-                          )}
+                    <div className="px-8 py-4 bg-amber-50 border-l-4 border-amber-400">
+                      <div className="flex items-start">
+                        <div className="flex-shrink-0">
+                          <svg
+                            className="h-5 w-5 text-amber-400"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M8.257 3.099c.765-1.36 2.725-1.36 3.49 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
                         </div>
-                        {errors.id_document && (
-                          <div className="col-span-2">
-                            <p className="text-xs text-red-600">
-                              {errors.id_document}
-                            </p>
+                        <div className="ml-3">
+                          <p className="text-sm text-amber-700">
+                            <strong>Registration Requirements:</strong> Complete
+                            all fields marked with{" "}
+                            <span className="text-red-500 font-semibold">
+                              *
+                            </span>
+                            . A valid government-issued ID upload is required
+                            for verification.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <form className="px-8 py-6 space-y-6" onSubmit={handleSubmit}>
+                    {allowSignup && mode === "signup" && (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                              First name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Juan"
+                              value={formData.first_name}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  first_name: e.target.value,
+                                })
+                              }
+                              className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                                errors.first_name
+                                  ? "border-red-400 bg-red-50 focus:border-red-400"
+                                  : "border-slate-300 bg-white focus:border-[#0038A8]"
+                              }`}
+                            />
+                            {errors.first_name && (
+                              <p className="text-sm text-red-600 flex items-center gap-1">
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {errors.first_name}
+                              </p>
+                            )}
                           </div>
-                        )}
-                        {idPreview && (
-                          <div className="mt-2">
-                            <img
-                              src={idPreview}
-                              alt="ID preview"
-                              className="h-24 rounded-md border border-slate-200 object-cover"
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                              Middle name{" "}
+                              <span className="text-slate-400">(optional)</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Santos"
+                              value={formData.middle_name || ""}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  middle_name: e.target.value,
+                                })
+                              }
+                              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8]"
                             />
                           </div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                              Last name <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Dela Cruz"
+                              value={formData.last_name}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  last_name: e.target.value,
+                                })
+                              }
+                              className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                                errors.last_name
+                                  ? "border-red-400 bg-red-50 focus:border-red-400"
+                                  : "border-slate-300 bg-white focus:border-[#0038A8]"
+                              }`}
+                            />
+                            {errors.last_name && (
+                              <p className="text-sm text-red-600 flex items-center gap-1">
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {errors.last_name}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-                  {!isSignup && (
-                    <Input
-                      label="Email address"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                      error={errors.email}
-                      requiredAsterisk
-                      shake={!!errors.email}
-                    />
-                  )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Email address"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={formData.email}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                email: e.target.value,
+                              })
+                            }
+                            error={errors.email}
+                            requiredAsterisk
+                          />
+                          <Input
+                            label="Mobile number"
+                            type="tel"
+                            placeholder="09xx xxx xxxx"
+                            value={formData.mobile_number}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                mobile_number: e.target.value,
+                              })
+                            }
+                            error={errors.mobile_number}
+                            requiredAsterisk
+                          />
+                        </div>
 
-                  <div>
-                    <label
-                      className={`mb-1.5 block text-sm text-slate-700 ${
-                        errors.password ? "shake" : ""
-                      }`}
-                    >
-                      <span className="required-asterisk">Password</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        className={`w-full rounded-lg border px-3 py-2 pr-10 text-slate-800 placeholder-slate-400 outline-none ring-0 transition ${
-                          errors.password
-                            ? "border-red-400 bg-red-50"
-                            : "border-slate-300 bg-white focus:border-slate-400"
-                        }`}
-                        type={showPassword ? "text" : "password"}
-                        placeholder={
-                          mode === "login"
-                            ? "Your password"
-                            : "Create a strong password"
-                        }
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute inset-y-0 right-0 px-3 text-slate-500 hover:text-slate-700"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ? "🙈" : "👁️"}
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {errors.password}
-                      </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <Input
+                            label="Barangay"
+                            type="text"
+                            placeholder="San Jose"
+                            value={formData.barangay}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                barangay: e.target.value,
+                              })
+                            }
+                            error={errors.barangay}
+                            requiredAsterisk
+                          />
+                          <Input
+                            label="Zone"
+                            type="text"
+                            placeholder="Zone 1"
+                            value={formData.zone}
+                            onChange={(e) =>
+                              setFormData({ ...formData, zone: e.target.value })
+                            }
+                            error={errors.zone}
+                            requiredAsterisk
+                          />
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                              Government-issued ID{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0] || null;
+                                  if (idPreview) URL.revokeObjectURL(idPreview);
+                                  setIdDoc(f);
+                                  setIdPreview(
+                                    f ? URL.createObjectURL(f) : null
+                                  );
+                                }}
+                                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#0038A8]/10 file:text-[#0038A8] hover:file:bg-[#0038A8]/20"
+                              />
+                              {idDoc && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (idPreview)
+                                      URL.revokeObjectURL(idPreview);
+                                    setIdDoc(null);
+                                    setIdPreview(null);
+                                  }}
+                                  className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                            {errors.id_document && (
+                              <p className="text-sm text-red-600 flex items-center gap-1">
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {errors.id_document}
+                              </p>
+                            )}
+                          </div>
+                          {idPreview && (
+                            <div className="mt-4">
+                              <p className="text-sm font-medium text-slate-700 mb-2">
+                                ID Preview:
+                              </p>
+                              <img
+                                src={idPreview}
+                                alt="ID preview"
+                                className="h-32 w-auto rounded-lg border border-slate-200 object-cover shadow-sm"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
-                  </div>
 
-                  {/* General error message */}
-                  {errors.general && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-sm text-red-600">{errors.general}</p>
-                    </div>
-                  )}
+                    {mode !== "signup" && (
+                      <Input
+                        label="Email address"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        error={errors.email}
+                        requiredAsterisk
+                      />
+                    )}
 
-                  {mode === "login" && (
-                    <div className="flex items-center justify-between text-xs">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 rounded border-slate-300 bg-white"
-                        />
-                        <span className="text-slate-600">Remember me</span>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-700">
+                        Password <span className="text-red-500">*</span>
                       </label>
-                      <a
-                        href="#"
-                        className="text-slate-600 hover:text-slate-800 underline underline-offset-4"
-                      >
-                        Forgot password?
-                      </a>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="group mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#0038A8] px-4 py-2 font-semibold text-white transition hover:bg-[#1e3a8a] active:scale-[0.99] disabled:opacity-50"
-                  >
-                    {loading
-                      ? "Loading..."
-                      : mode === "login"
-                      ? "Log in"
-                      : "Create account"}
-                    <span className="transition-transform group-hover:translate-x-0.5">
-                      →
-                    </span>
-                  </button>
-
-                  {allowSignup && (
-                    <div className="pt-2 text-center text-xs text-slate-600">
-                      {mode === "login" ? (
-                        <>
-                          Don’t have an account?{" "}
-                          <button
-                            onClick={() => setMode("signup")}
-                            className="underline underline-offset-4 hover:text-slate-800"
+                      <div className="relative">
+                        <input
+                          className={`w-full rounded-lg border px-4 py-3 pr-12 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                            errors.password
+                              ? "border-red-400 bg-red-50 focus:border-red-400"
+                              : "border-slate-300 bg-white focus:border-[#0038A8]"
+                          }`}
+                          type={showPassword ? "text" : "password"}
+                          placeholder={
+                            mode === "login"
+                              ? "Enter your password"
+                              : "Create a strong password"
+                          }
+                          value={formData.password}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              password: e.target.value,
+                            })
+                          }
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          className="absolute inset-y-0 right-0 px-4 text-slate-500 hover:text-slate-700 transition-colors"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="h-5 w-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <svg
+                            className="h-4 w-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
                           >
-                            Sign up
-                          </button>
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          {errors.password}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* General error message */}
+                    {errors.general && (
+                      <div className="p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0">
+                            <svg
+                              className="h-5 w-5 text-red-400"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-red-700 font-medium">
+                              {errors.general}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {mode === "login" && (
+                      <div className="flex items-center justify-between text-sm">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded border-slate-300 text-[#0038A8] focus:ring-[#0038A8]/20"
+                          />
+                          <span className="text-slate-600">Remember me</span>
+                        </label>
+                        <a
+                          href="#"
+                          className="text-[#0038A8] hover:text-[#1e40af] font-medium transition-colors"
+                        >
+                          Forgot password?
+                        </a>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full group inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-6 py-4 font-semibold text-white transition-all duration-200 hover:from-[#1e40af] hover:to-[#1e3a8a] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                    >
+                      {loading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                          </svg>
+                          Processing...
                         </>
                       ) : (
                         <>
-                          Already have an account?{" "}
-                          <button
-                            onClick={() => setMode("login")}
-                            className="underline underline-offset-4 hover:text-slate-800"
+                          {mode === "login" ? "Sign In" : "Create Account"}
+                          <svg
+                            className="h-5 w-5 transition-transform group-hover:translate-x-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                           >
-                            Log in
-                          </button>
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
                         </>
                       )}
-                    </div>
-                  )}
-                </form>
-              </div>
+                    </button>
 
-              <p className="mt-4 text-center text-xs text-slate-600">
-                By continuing, you confirm your reports are truthful and
-                accurate to the best of your knowledge.
-              </p>
-            </div>
-          </section>
+                    {allowSignup && (
+                      <div className="pt-4 text-center text-sm text-slate-600 border-t border-slate-100">
+                        {mode === "login" ? (
+                          <>
+                            Don't have an account?{" "}
+                            <button
+                              onClick={() => setMode("signup")}
+                              className="text-[#0038A8] hover:text-[#1e40af] font-medium transition-colors"
+                            >
+                              Create one here
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            Already have an account?{" "}
+                            <button
+                              onClick={() => setMode("login")}
+                              className="text-[#0038A8] hover:text-[#1e40af] font-medium transition-colors"
+                            >
+                              Sign in instead
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
       </main>
 
-      <footer className="px-6 md:px-10 py-8 text-xs text-white/60">
-        © {new Date().getFullYear()} RIPARO • A citizen reporting platform for
-        LGUs in the Philippines
+      <footer className="px-6 md:px-12 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 mt-auto">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <p className="text-sm text-slate-800 font-medium">
+                © {new Date().getFullYear()} RIPARO
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                Digital governance platform for Barangay San Jose, Camarines Sur
+              </p>
+            </div>
+            <div className="flex items-center gap-6 text-xs text-slate-600">
+              <span>Report • Process • Resolve</span>
+              <div className="h-4 w-px bg-slate-300" />
+              <span>Philippines</span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
@@ -768,32 +927,35 @@ function Input(props: {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   requiredAsterisk?: boolean;
-  shake?: boolean;
 }) {
   return (
-    <div>
-      <label
-        className={`mb-1.5 block text-sm text-slate-700 ${
-          props.shake ? "shake" : ""
-        }`}
-      >
-        <span className={props.requiredAsterisk ? "required-asterisk" : ""}>
-          {props.label}
-        </span>
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-slate-700">
+        {props.label}{" "}
+        {props.requiredAsterisk && <span className="text-red-500">*</span>}
       </label>
       <input
         type={props.type || "text"}
         placeholder={props.placeholder}
         value={props.value}
         onChange={props.onChange}
-        className={`w-full rounded-lg border px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 transition ${
+        className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
           props.error
-            ? "border-red-400 bg-red-50"
-            : "border-slate-300 bg-white focus:border-slate-400"
+            ? "border-red-400 bg-red-50 focus:border-red-400"
+            : "border-slate-300 bg-white focus:border-[#0038A8]"
         }`}
       />
       {props.error && (
-        <p className="mt-1 text-xs text-red-600">{props.error}</p>
+        <p className="text-sm text-red-600 flex items-center gap-1">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          {props.error}
+        </p>
       )}
     </div>
   );

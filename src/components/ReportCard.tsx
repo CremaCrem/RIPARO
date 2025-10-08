@@ -8,7 +8,6 @@ export type ReportCardProps = {
   afterUrl?: string;
   createdAt?: string;
   meta?: string;
-  onClick?: () => void;
 };
 
 export default function ReportCard({
@@ -19,7 +18,6 @@ export default function ReportCard({
   afterUrl,
   createdAt,
   meta,
-  onClick,
 }: ReportCardProps) {
   const color =
     status === "resolved"
@@ -121,20 +119,6 @@ export default function ReportCard({
             title={meta}
           >
             {meta}
-          </div>
-        )}
-        {onClick && (
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClick();
-              }}
-              className="rounded-md bg-[#0038A8] px-3 py-1.5 text-white text-[12px]"
-            >
-              View more
-            </button>
           </div>
         )}
       </div>

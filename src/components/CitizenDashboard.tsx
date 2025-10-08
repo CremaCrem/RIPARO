@@ -3,6 +3,21 @@ import Modal from "./Modal";
 import { API_URL } from "../config";
 import ReportCard from "./ReportCard";
 import ReportTimeline from "./ReportTimeline";
+import RIPARO_Logo from "../assets/RIPARO_Logo.png";
+import {
+  HomeIcon,
+  DocumentPlusIcon,
+  ClipboardDocumentCheckIcon,
+  ChatBubbleLeftRightIcon,
+  UserCircleIcon,
+  QuestionMarkCircleIcon,
+  ArrowRightOnRectangleIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ChevronDoubleRightIcon,
+  ChevronLeftIcon,
+} from "@heroicons/react/24/outline";
 
 type TabKey =
   | "dashboard"
@@ -41,18 +56,59 @@ export default function CitizenDashboard({
   onLogout,
 }: CitizenDashboardProps) {
   const [active, setActive] = useState<TabKey>("dashboard");
+  const [collapsed, setCollapsed] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
   const [myReports, setMyReports] = useState<ApiReport[]>([]);
+  const [resolvedFeed, setResolvedFeed] = useState<ApiReport[]>([]);
+  const [loadingResolved, setLoadingResolved] = useState(false);
+  const [resolvedError, setResolvedError] = useState<string | null>(null);
   const [loadingReports, setLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [detailsReport, setDetailsReport] = useState<ApiReport | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
 
+  // Calculate real dashboard statistics
+  const dashboardStats = useMemo(() => {
+    const open = myReports.filter(
+      (r) => r.progress === "pending" || r.progress === "in_review"
+    ).length;
+    const assigned = myReports.filter((r) => r.progress === "assigned").length;
+    const resolved = myReports.filter((r) => r.progress === "resolved").length;
+    const rejected = myReports.filter((r) => r.progress === "rejected").length;
+    return { open, assigned, resolved, rejected };
+  }, [myReports]);
+
   // const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const recentCards = useMemo(() => myReports.slice(0, 3), [myReports]);
+  const recentCards = useMemo(() => resolvedFeed.slice(0, 12), [resolvedFeed]);
+
+  // Animated counter hook
+  const useAnimatedCounter = (target: number, duration = 1000) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+      let start = 0;
+      const increment = target / (duration / 16);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+          setCount(target);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 16);
+      return () => clearInterval(timer);
+    }, [target, duration]);
+    return count;
+  };
+
+  // Pre-calculate animated counters for all stats
+  const animatedOpen = useAnimatedCounter(dashboardStats.open);
+  const animatedAssigned = useAnimatedCounter(dashboardStats.assigned);
+  const animatedResolved = useAnimatedCounter(dashboardStats.resolved);
+  const animatedRejected = useAnimatedCounter(dashboardStats.rejected);
 
   useEffect(() => {
     const load = async () => {
@@ -73,6 +129,34 @@ export default function CitizenDashboard({
       }
     };
     load();
+  }, []);
+
+  // load global resolved feed for dashboard (shared view)
+  useEffect(() => {
+    const loadResolved = async () => {
+      setLoadingResolved(true);
+      setResolvedError(null);
+      try {
+        const params = new URLSearchParams();
+        params.set("per_page", "12");
+        params.set("page", "1");
+        const res = await fetch(
+          `${API_URL}/public/reports?${params.toString()}`
+        );
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.message || "Failed to load resolved feed");
+        const items: ApiReport[] = Array.isArray(data.data)
+          ? data.data
+          : data.reports || [];
+        setResolvedFeed(items);
+      } catch (e: any) {
+        setResolvedError(e?.message || "Failed to load resolved feed");
+      } finally {
+        setLoadingResolved(false);
+      }
+    };
+    loadResolved();
   }, []);
 
   useEffect(() => {
@@ -98,112 +182,334 @@ export default function CitizenDashboard({
   }, [notice]);
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-800">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
       <div className="flex min-h-screen">
-        <aside className="w-60 shrink-0 bg-[#0038A8] text-white">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-            <div className="h-10 w-10 rounded-full bg-[#FCD116] flex items-center justify-center text-[#0038A8] font-black">
-              RP
-            </div>
-            <div>
-              <div className="text-base font-semibold leading-none">RIPARO</div>
-              <div className="text-[11px] text-white/70 leading-none mt-0.5">
-                Report. Process. Resolve.
-              </div>
+        <aside
+          className={`${
+            collapsed ? "w-16" : "w-64"
+          } shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
+        >
+          <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-[#2563eb] via-[#0038A8] to-[#001a57] animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
+
+          {/* Logo Section */}
+          <div className="relative px-3 py-4 border-b border-white/10">
+            <div className="flex items-center justify-center">
+              {collapsed ? (
+                <img
+                  src={RIPARO_Logo}
+                  alt="RIPARO"
+                  className="h-8 w-8 object-contain filter brightness-0 invert"
+                />
+              ) : (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={RIPARO_Logo}
+                    alt="RIPARO"
+                    className="h-10 w-10 object-contain filter brightness-0 invert"
+                  />
+                  <div>
+                    <div className="text-base font-semibold leading-none tracking-wide">
+                      RIPARO
+                    </div>
+                    <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                      Report. Process. Resolve.
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <nav className="mt-2 px-2 text-sm">
+          {/* Toggle Button - Moved to bottom of sidebar */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            <button
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand" : "Collapse"}
+              className="rounded-lg hover:bg-white/10 p-2 text-white/90 focus:outline-2 focus:outline-[#FCD116] transition-all duration-200 hover:scale-110 bg-white/5 backdrop-blur-sm"
+              onClick={() => setCollapsed((v) => !v)}
+            >
+              {collapsed ? (
+                <ChevronDoubleRightIcon className="h-5 w-5" />
+              ) : (
+                <ChevronLeftIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+
+          <nav className="relative mt-3 px-2 pb-6 text-sm space-y-1">
             <SideLink
               label="Dashboard"
               active={active === "dashboard"}
+              icon={<HomeIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("dashboard")}
             />
             <SideLink
               label="Submit Report"
               active={active === "submit"}
+              icon={<DocumentPlusIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("submit")}
             />
             <SideLink
               label="Track My Report"
               active={active === "track"}
+              icon={<ClipboardDocumentCheckIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("track")}
             />
             <SideLink
               label="Feedback"
               active={active === "feedback"}
+              icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("feedback")}
             />
             <SideLink
               label="Edit Profile"
               active={active === "profile"}
+              icon={<UserCircleIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("profile")}
             />
             <SideLink
               label="Help"
               active={active === "help"}
+              icon={<QuestionMarkCircleIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setActive("help")}
             />
             <button
-              className="mt-1 w-full text-left rounded-lg px-3 py-2 text-white/90 hover:bg-white/10"
+              className={`mt-4 w-full ${
+                collapsed ? "justify-center" : "text-left"
+              } rounded-lg px-3 py-2 text-white/90 outline-offset-2 transition-all duration-200 focus:outline-2 focus:outline-[#FCD116] hover:bg-white/10 hover:scale-105 flex items-center gap-3 group`}
               onClick={() => setShowLogout(true)}
             >
-              Logout
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              {!collapsed && <span>Logout</span>}
             </button>
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 md:p-8">
-          {notice && <div className="mb-4 notice notice-success">{notice}</div>}
+        <main className="flex-1 p-4 md:p-8 relative overflow-hidden">
+          {/* Background decorative elements */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-[#0038A8]/5 to-[#FCD116]/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-r from-[#FCD116]/5 to-[#0038A8]/5 rounded-full blur-3xl animate-pulse delay-1000" />
+
+          {notice && (
+            <div className="mb-4 relative rounded-xl border border-emerald-300 bg-emerald-50/90 backdrop-blur-md px-4 py-3 shadow-lg animate-in slide-in-from-top-2 duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent rounded-xl" />
+              <div className="relative flex items-center gap-2">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-emerald-700 font-medium">{notice}</span>
+              </div>
+            </div>
+          )}
           {active === "dashboard" && (
-            <DashboardHome
-              userName={userName}
-              reports={recentCards}
-              onCardClick={(id) => {
-                setActive("track");
-                setHighlightId(id);
-              }}
-            />
+            <section className="space-y-6 animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <div className="relative rounded-2xl bg-white/90 backdrop-blur-lg border border-slate-200 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0038A8]/5 via-transparent to-[#FCD116]/5 rounded-2xl" />
+                <div className="relative px-6 py-5 overflow-hidden rounded-t-2xl">
+                  <div className="absolute inset-0 -z-10 opacity-30 bg-gradient-to-r from-[#2563eb]/10 via-[#0038A8]/10 to-[#001a57]/10 animate-pulse" />
+                  <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
+                    Welcome, {userName}! 👋
+                  </h1>
+                  <p className="text-sm text-slate-600 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                    Barangay Kinalansan, Zone 4 • Verified
+                  </p>
+                </div>
+                <div className="px-6 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    {
+                      label: "Open",
+                      color: "bg-gradient-to-r from-amber-400 to-amber-500",
+                      icon: ClockIcon,
+                      count: dashboardStats.open,
+                      bgColor: "bg-amber-50",
+                      borderColor: "border-amber-200",
+                    },
+                    {
+                      label: "Assigned",
+                      color: "bg-gradient-to-r from-blue-500 to-blue-600",
+                      icon: ClipboardDocumentCheckIcon,
+                      count: dashboardStats.assigned,
+                      bgColor: "bg-blue-50",
+                      borderColor: "border-blue-200",
+                    },
+                    {
+                      label: "Resolved",
+                      color: "bg-gradient-to-r from-emerald-500 to-emerald-600",
+                      icon: CheckCircleIcon,
+                      count: dashboardStats.resolved,
+                      bgColor: "bg-emerald-50",
+                      borderColor: "border-emerald-200",
+                    },
+                    {
+                      label: "Rejected",
+                      color: "bg-gradient-to-r from-red-500 to-red-600",
+                      icon: XCircleIcon,
+                      count: dashboardStats.rejected,
+                      bgColor: "bg-red-50",
+                      borderColor: "border-red-200",
+                    },
+                  ].map((s, i) => {
+                    // Get the corresponding animated count
+                    let animatedCount;
+                    switch (s.label) {
+                      case "Open":
+                        animatedCount = animatedOpen;
+                        break;
+                      case "Assigned":
+                        animatedCount = animatedAssigned;
+                        break;
+                      case "Resolved":
+                        animatedCount = animatedResolved;
+                        break;
+                      case "Rejected":
+                        animatedCount = animatedRejected;
+                        break;
+                      default:
+                        animatedCount = s.count;
+                    }
+
+                    return (
+                      <div
+                        key={i}
+                        className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <div className="relative flex items-center justify-between">
+                          <span className="text-sm font-semibold text-slate-700">
+                            {s.label}
+                          </span>
+                          <div
+                            className={`p-2 rounded-lg ${s.color} shadow-sm`}
+                          >
+                            <s.icon className="h-4 w-4 text-white" />
+                          </div>
+                        </div>
+                        <div className="mt-3 text-2xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                          {animatedCount}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="px-6 py-4 border-b border-slate-100">
+                  <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                    Recently resolved across the municipality
+                  </h2>
+                </div>
+                <div className="p-6">
+                  {resolvedError && (
+                    <div className="mb-4 notice notice-error">
+                      {resolvedError}
+                    </div>
+                  )}
+                  {loadingResolved ? (
+                    <div className="text-sm text-slate-600">Loading…</div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {recentCards.map((r) => (
+                        <ReportCard
+                          key={r.report_id}
+                          reportId={r.report_id}
+                          title={r.submitter_name}
+                          status={r.progress}
+                          thumbUrl={r.photos?.[0]}
+                          afterUrl={(r as any).resolution_photos?.[0]}
+                          createdAt={r.created_at}
+                          meta={`${r.type.replaceAll("_", " ")} • ${r.address}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
           )}
           {active === "submit" && (
-            <SubmitReport
-              onNotice={(msg) => setNotice(msg)}
-              onSubmitted={() => {
-                // Reload reports after submission
-                (async () => {
-                  try {
-                    const token = localStorage.getItem("auth_token") || "";
-                    const res = await fetch(`${API_URL}/my-reports`, {
-                      headers: token
-                        ? { Authorization: `Bearer ${token}` }
-                        : {},
-                    });
-                    const data = await res.json();
-                    if (res.ok)
-                      setMyReports(
-                        Array.isArray(data.reports) ? data.reports : []
-                      );
-                  } catch {}
-                })();
-                setActive("track");
-              }}
-            />
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <Panel
+                title="Submit Report"
+                description="Provide details so your LGU can act quickly."
+              >
+                <SubmitReport
+                  onNotice={(msg) => setNotice(msg)}
+                  onSubmitted={() => {
+                    (async () => {
+                      try {
+                        const token = localStorage.getItem("auth_token") || "";
+                        const res = await fetch(`${API_URL}/my-reports`, {
+                          headers: token
+                            ? { Authorization: `Bearer ${token}` }
+                            : {},
+                        });
+                        const data = await res.json();
+                        if (res.ok)
+                          setMyReports(
+                            Array.isArray(data.reports) ? data.reports : []
+                          );
+                      } catch {}
+                    })();
+                    setActive("track");
+                  }}
+                />
+              </Panel>
+            </section>
           )}
           {active === "track" && (
-            <TrackFeedback
-              loading={loadingReports}
-              error={reportsError}
-              reports={myReports}
-              highlightId={highlightId}
-              setRowRef={(id, el) => (rowRefs.current[id] = el)}
-              onView={(r) => openDetails(r)}
-            />
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <Panel
+                title="Track My Report"
+                description="Follow the progress of your submissions."
+              >
+                <TrackFeedback
+                  loading={loadingReports}
+                  error={reportsError}
+                  reports={myReports}
+                  highlightId={highlightId}
+                  setRowRef={(id, el) => (rowRefs.current[id] = el)}
+                  onView={(r) => openDetails(r)}
+                />
+              </Panel>
+            </section>
           )}
           {active === "feedback" && (
-            <FeedbackForm onNotice={(msg) => setNotice(msg)} />
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <Panel
+                title="Submit Feedback"
+                description="Help us improve services with your suggestions."
+              >
+                <FeedbackForm onNotice={(msg) => setNotice(msg)} />
+              </Panel>
+            </section>
           )}
-          {active === "profile" && <EditProfile />}
-          {active === "help" && <HelpContent />}
+          {active === "profile" && (
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <Panel
+                title="Edit Profile"
+                description="Update your information and submit for verification."
+              >
+                <EditProfile />
+              </Panel>
+            </section>
+          )}
+          {active === "help" && (
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <Panel
+                title="Help & Support"
+                description="Frequently asked questions and guidance."
+              >
+                <HelpContent />
+              </Panel>
+            </section>
+          )}
         </main>
       </div>
 
@@ -339,69 +645,112 @@ export default function CitizenDashboard({
   );
 }
 
+function Panel({
+  title,
+  description,
+  children,
+  tone = "blue",
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  tone?: "blue" | "amber" | "emerald" | "violet" | "indigo";
+}) {
+  const map: Record<string, { header: string; ring: string; accent: string }> =
+    {
+      blue: {
+        header:
+          "bg-gradient-to-r from-[#eaf1ff] via-[#e6eeff] to-white/90 backdrop-blur-sm",
+        ring: "ring-1 ring-[#2563eb1f]",
+        accent: "border-t-4 border-[#0038A8]",
+      },
+      amber: {
+        header:
+          "bg-gradient-to-r from-[#fff7e6] via-[#fff1d6] to-white/90 backdrop-blur-sm",
+        ring: "ring-1 ring-[#f59e0b1f]",
+        accent: "border-t-4 border-amber-500",
+      },
+      emerald: {
+        header:
+          "bg-gradient-to-r from-[#e7fff5] via-[#dffbef] to-white/90 backdrop-blur-sm",
+        ring: "ring-1 ring-[#10b9811f]",
+        accent: "border-t-4 border-emerald-500",
+      },
+      violet: {
+        header:
+          "bg-gradient-to-r from-[#f3e8ff] via-[#efe1ff] to-white/90 backdrop-blur-sm",
+        ring: "ring-1 ring-[#7c3aed1f]",
+        accent: "border-t-4 border-violet-500",
+      },
+      indigo: {
+        header:
+          "bg-gradient-to-r from-[#eaeaff] via-[#e3e7ff] to-white/90 backdrop-blur-sm",
+        ring: "ring-1 ring-[#4f46e51f]",
+        accent: "border-t-4 border-indigo-500",
+      },
+    };
+  const theme = map[tone] || map.blue;
+  return (
+    <div
+      className={`group relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.2)] transition-all duration-300 ${theme.ring} ${theme.accent}`}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 rounded-2xl" />
+      <div
+        className={`relative px-6 py-5 border-b border-slate-100/50 rounded-t-2xl ${theme.header}`}
+      >
+        <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+          {title}
+        </h2>
+        {description && (
+          <p className="mt-0.5 text-sm text-slate-600">{description}</p>
+        )}
+      </div>
+      <div className="relative p-6">{children}</div>
+    </div>
+  );
+}
+
 function SideLink({
   label,
   active,
   onClick,
+  icon,
+  collapsed,
 }: {
   label: string;
   active?: boolean;
   onClick: () => void;
+  icon?: React.ReactNode;
+  collapsed?: boolean;
 }) {
   return (
-    <button
-      className={`mt-1 w-[15rem] text-left rounded-lg px-3 py-2 ${
-        active
-          ? "bg-slate-50 text-[#1e3a8a] font-semibold"
-          : "text-white/90 hover:bg-white/10"
-      }`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
-  );
-}
-
-function DashboardHome({
-  userName,
-  reports,
-  onCardClick,
-}: {
-  userName: string;
-  reports: ApiReport[];
-  onCardClick: (reportId: string) => void;
-}) {
-  return (
-    <div>
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="px-5 py-4">
-          <h1 className="text-xl font-bold tracking-tight">
-            Welcome, {userName}!
-          </h1>
-          <p className="text-sm text-slate-600">
-            Barangay Kinalansan, Zone 4 • Verified
-          </p>
+    <div className="relative group">
+      <button
+        className={`w-full ${
+          collapsed ? "justify-center" : "text-left"
+        } rounded-lg px-3 py-2.5 transition-all duration-200 outline-offset-2 focus:outline-2 focus:outline-[#FCD116] ${
+          active
+            ? "bg-white/20 text-white font-semibold ring-1 ring-white/30 shadow-lg transform scale-105 animate-pulse"
+            : "text-white/90 hover:bg-white/10 hover:scale-105 hover:shadow-md"
+        } flex items-center gap-3 relative overflow-hidden`}
+        onClick={onClick}
+      >
+        {active && (
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FCD116]/20 via-transparent to-[#FCD116]/20 animate-pulse" />
+        )}
+        <div className="relative z-10 flex items-center gap-3">
+          {icon}
+          {!collapsed && (
+            <span className="transition-all duration-200">{label}</span>
+          )}
         </div>
-      </div>
-
-      <h2 className="mt-6 mb-3 text-sm font-semibold text-slate-700 uppercase tracking-wide">
-        Your recent reports
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {reports.map((r) => (
-          <ReportCard
-            key={r.report_id}
-            reportId={r.report_id}
-            title={r.submitter_name}
-            status={r.progress}
-            thumbUrl={r.photos?.[0]}
-            afterUrl={(r as any).resolution_photos?.[0]}
-            createdAt={r.created_at}
-            meta={`${r.type.replaceAll("_", " ")} • ${r.address}`}
-            onClick={() => onCardClick(r.report_id)}
-          />
-        ))}
-      </div>
+      </button>
+      {collapsed && (
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {label}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full border-4 border-transparent border-r-slate-900" />
+        </div>
+      )}
     </div>
   );
 }
@@ -552,7 +901,7 @@ function SubmitReport({
         </div>
       )}
 
-      <form className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <form className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-5 shadow-lg hover:shadow-xl transition-all duration-300">
         <label
           className={`block ${touchedMissing.submitter_name ? "shake" : ""}`}
         >
@@ -565,9 +914,9 @@ function SubmitReport({
             onChange={handleChange}
             className={`w-full rounded-lg border ${
               touchedMissing.submitter_name
-                ? "border-red-400"
-                : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 
@@ -581,8 +930,10 @@ function SubmitReport({
             value={form.age}
             onChange={handleChange}
             className={`w-full rounded-lg border ${
-              touchedMissing.age ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+              touchedMissing.age
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 
@@ -595,8 +946,10 @@ function SubmitReport({
             value={form.gender}
             onChange={handleChange}
             className={`w-full rounded-lg border ${
-              touchedMissing.gender ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+              touchedMissing.gender
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           >
             <option value="">Select...</option>
             <option value="Male">Male</option>
@@ -618,8 +971,10 @@ function SubmitReport({
             value={form.address}
             onChange={handleChange}
             className={`w-full rounded-lg border ${
-              touchedMissing.address ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+              touchedMissing.address
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 
@@ -636,8 +991,10 @@ function SubmitReport({
             value={form.type}
             onChange={handleChange}
             className={`w-full rounded-lg border ${
-              touchedMissing.type ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+              touchedMissing.type
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           >
             <option value="">Select...</option>
             <option value="infrastructure">Infrastructure</option>
@@ -661,8 +1018,10 @@ function SubmitReport({
             value={form.description}
             onChange={handleChange}
             className={`w-full rounded-lg border ${
-              touchedMissing.description ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
+              touchedMissing.description
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 

@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
+import RIPARO_Logo from "../assets/RIPARO_Logo.png";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,6 +10,20 @@ import {
   Tooltip,
   Legend as ChartLegend,
 } from "chart.js";
+import {
+  HomeIcon,
+  DocumentTextIcon,
+  ChatBubbleLeftRightIcon,
+  UserGroupIcon,
+  ClipboardDocumentListIcon,
+  ArrowRightOnRectangleIcon,
+  InboxIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ChevronDoubleRightIcon,
+  ChevronLeftIcon,
+} from "@heroicons/react/24/outline";
 
 ChartJS.register(
   CategoryScale,
@@ -32,7 +47,9 @@ type StatCard = {
   label: string;
   value: number;
   color: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ className?: string }>;
+  bgColor?: string;
+  borderColor?: string;
 };
 
 type UserRow = {
@@ -84,6 +101,7 @@ export default function StaffDashboard({
 }) {
   const [tab, setTab] = useState<StaffTab>("dashboard");
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Dashboard stats state
   const [timeRange, setTimeRange] = useState<"day" | "week" | "month" | "year">(
@@ -101,6 +119,35 @@ export default function StaffDashboard({
     {}
   );
   const [pendingUpdateRequests, setPendingUpdateRequests] = useState(0);
+
+  // Animated counter hook
+  const useAnimatedCounter = (target: number, duration = 1000) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+      let start = 0;
+      const increment = target / (duration / 16);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+          setCount(target);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 16);
+      return () => clearInterval(timer);
+    }, [target, duration]);
+    return count;
+  };
+
+  // Pre-calculate animated counters for all stats
+  const animatedTotalReports = useAnimatedCounter(totalReports);
+  const animatedPending = useAnimatedCounter(reportsPending);
+  const animatedResolved = useAnimatedCounter(reportsResolved);
+  const animatedRejected = useAnimatedCounter(reportsRejected);
+  const animatedFeedback = useAnimatedCounter(totalFeedback);
+  const animatedPendingUsers = useAnimatedCounter(pendingUsers);
+  const animatedUpdateRequests = useAnimatedCounter(pendingUpdateRequests);
 
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
@@ -211,26 +258,34 @@ export default function StaffDashboard({
       {
         label: "Total Reports",
         value: totalReports,
-        color: "bg-blue-600",
-        icon: <IconInbox />,
+        color: "bg-gradient-to-r from-blue-500 to-blue-600",
+        bgColor: "bg-blue-50",
+        borderColor: "border-blue-200",
+        icon: InboxIcon,
       },
       {
         label: "In Progress",
         value: reportsPending,
-        color: "bg-orange-500",
-        icon: <IconSpinner />,
+        color: "bg-gradient-to-r from-amber-400 to-amber-500",
+        bgColor: "bg-amber-50",
+        borderColor: "border-amber-200",
+        icon: ClockIcon,
       },
       {
         label: "Resolved",
         value: reportsResolved,
-        color: "bg-emerald-600",
-        icon: <IconCheck />,
+        color: "bg-gradient-to-r from-emerald-500 to-emerald-600",
+        bgColor: "bg-emerald-50",
+        borderColor: "border-emerald-200",
+        icon: CheckCircleIcon,
       },
       {
         label: "Rejected",
         value: reportsRejected,
-        color: "bg-red-600",
-        icon: <IconX />,
+        color: "bg-gradient-to-r from-red-500 to-red-600",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
+        icon: XCircleIcon,
       },
     ],
     [totalReports, reportsPending, reportsResolved, reportsRejected]
@@ -492,71 +547,132 @@ export default function StaffDashboard({
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-800">
+    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
       <div className="flex min-h-screen">
-        <aside className="w-60 shrink-0 bg-[#0038A8] text-white">
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10">
-            <div className="h-10 w-10 rounded-full bg-[#FCD116] flex items-center justify-center text-[#0038A8] font-black">
-              RP
-            </div>
-            <div>
-              <div className="text-base font-semibold leading-none">RIPARO</div>
-              <div className="text-[11px] text-white/70 leading-none mt-0.5">
-                Report. Process. Resolve.
-              </div>
+        <aside
+          className={`${
+            collapsed ? "w-16" : "w-64"
+          } shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
+        >
+          <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-[#2563eb] via-[#0038A8] to-[#001a57] animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
+
+          {/* Logo Section */}
+          <div className="relative px-3 py-4 border-b border-white/10">
+            <div className="flex items-center justify-center">
+              {collapsed ? (
+                <img
+                  src={RIPARO_Logo}
+                  alt="RIPARO"
+                  className="h-8 w-8 object-contain filter brightness-0 invert"
+                />
+              ) : (
+                <div className="flex items-center gap-3">
+                  <img
+                    src={RIPARO_Logo}
+                    alt="RIPARO"
+                    className="h-10 w-10 object-contain filter brightness-0 invert"
+                  />
+                  <div>
+                    <div className="text-base font-semibold leading-none tracking-wide">
+                      RIPARO
+                    </div>
+                    <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                      Report. Process. Resolve.
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <nav className="mt-2 px-2 text-sm">
+          {/* Toggle Button - Moved to bottom of sidebar */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+            <button
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand" : "Collapse"}
+              className="rounded-lg hover:bg-white/10 p-2 text-white/90 focus:outline-2 focus:outline-[#FCD116] transition-all duration-200 hover:scale-110 bg-white/5 backdrop-blur-sm"
+              onClick={() => setCollapsed((v) => !v)}
+            >
+              {collapsed ? (
+                <ChevronDoubleRightIcon className="h-5 w-5" />
+              ) : (
+                <ChevronLeftIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+
+          <nav className="relative mt-3 px-2 pb-6 text-sm space-y-1">
             <SideLink
               label="Dashboard"
               active={tab === "dashboard"}
+              icon={<HomeIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setTab("dashboard")}
             />
             <SideLink
               label="Reports"
               active={tab === "reports"}
+              icon={<DocumentTextIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setTab("reports")}
             />
             <SideLink
               label="Feedback"
               active={tab === "feedback"}
+              icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setTab("feedback")}
             />
             <SideLink
               label="Users"
               active={tab === "users"}
+              icon={<UserGroupIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setTab("users")}
             />
             <SideLink
               label="Update Requests"
               active={tab === "updates"}
+              icon={<ClipboardDocumentListIcon className="h-5 w-5" />}
+              collapsed={collapsed}
               onClick={() => setTab("updates")}
             />
             <button
-              className="mt-1 w-full text-left rounded-lg px-3 py-2 text-white/90 hover:bg-white/10"
+              className={`mt-4 w-full ${
+                collapsed ? "justify-center" : "text-left"
+              } rounded-lg px-3 py-2 text-white/90 outline-offset-2 transition-all duration-200 focus:outline-2 focus:outline-[#FCD116] hover:bg-white/10 hover:scale-105 flex items-center gap-3 group`}
               onClick={() => setConfirmLogout(true)}
             >
-              Logout
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              {!collapsed && <span>Logout</span>}
             </button>
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 md:p-8">
+        <main className="flex-1 p-4 md:p-8 relative overflow-hidden">
+          {/* Background decorative elements */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-[#0038A8]/5 to-[#FCD116]/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-r from-[#FCD116]/5 to-[#0038A8]/5 rounded-full blur-3xl animate-pulse delay-1000" />
+
           {tab === "dashboard" && (
-            <section>
-              <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
+              <div className="relative rounded-2xl bg-white/90 backdrop-blur-lg border border-slate-200 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0038A8]/5 via-transparent to-[#FCD116]/5 rounded-2xl" />
+                <div className="relative px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
                     <h1 className="text-xl font-bold tracking-tight">
-                      Welcome, {staffName}
+                      Welcome, {staffName}! 👋
                     </h1>
-                    <p className="text-sm text-slate-600">{municipality}</p>
+                    <p className="text-sm text-slate-600 flex items-center gap-2">
+                      <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      {municipality}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-slate-600">Timeframe:</span>
                     <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={timeRange}
                       onChange={(e) => setTimeRange(e.target.value as any)}
                     >
@@ -576,75 +692,101 @@ export default function StaffDashboard({
               )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
-                {stats.map((s) => (
-                  <div
-                    key={s.label}
-                    className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-semibold text-slate-700">
-                        {s.label}
+                {stats.map((s) => {
+                  // Get the corresponding animated count
+                  let animatedCount;
+                  switch (s.label) {
+                    case "Total Reports":
+                      animatedCount = animatedTotalReports;
+                      break;
+                    case "In Progress":
+                      animatedCount = animatedPending;
+                      break;
+                    case "Resolved":
+                      animatedCount = animatedResolved;
+                      break;
+                    case "Rejected":
+                      animatedCount = animatedRejected;
+                      break;
+                    default:
+                      animatedCount = s.value;
+                  }
+
+                  return (
+                    <div
+                      key={s.label}
+                      className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                      <div className="relative flex items-center justify-between">
+                        <div className="text-sm font-semibold text-slate-700">
+                          {s.label}
+                        </div>
+                        <div className={`p-2 rounded-lg ${s.color} shadow-sm`}>
+                          <s.icon className="h-4 w-4 text-white" />
+                        </div>
                       </div>
-                      <div
-                        className={`h-8 w-8 rounded-md ${s.color} text-white flex items-center justify-center`}
-                      >
-                        {s.icon}
+                      <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                        {statsLoading ? "…" : animatedCount.toLocaleString()}
                       </div>
                     </div>
-                    <div className="mt-3 text-3xl font-extrabold">
-                      {statsLoading ? "…" : s.value.toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
+                  );
+                })}
+                <div className="group relative rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <div className="relative flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-700">
                       Total Feedback
                     </div>
-                    <div className="h-8 w-8 rounded-md bg-blue-600 text-white flex items-center justify-center">
-                      <IconInbox />
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm">
+                      <InboxIcon className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold">
-                    {statsLoading ? "…" : totalFeedback.toLocaleString()}
+                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                    {statsLoading ? "…" : animatedFeedback.toLocaleString()}
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
+                <div className="group relative rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <div className="relative flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-700">
                       New Users Pending
                     </div>
-                    <div className="h-8 w-8 rounded-md bg-amber-500 text-white flex items-center justify-center">
-                      <IconSpinner />
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm">
+                      <ClockIcon className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold">
-                    {statsLoading ? "…" : pendingUsers.toLocaleString()}
+                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                    {statsLoading ? "…" : animatedPendingUsers.toLocaleString()}
                   </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
+                <div className="group relative rounded-xl border border-purple-200 bg-purple-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <div className="relative flex items-center justify-between">
                     <div className="text-sm font-semibold text-slate-700">
                       Update Requests Pending
                     </div>
-                    <div className="h-8 w-8 rounded-md bg-purple-600 text-white flex items-center justify-center">
-                      <IconInbox />
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-sm">
+                      <ClipboardDocumentListIcon className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold">
+                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                     {statsLoading
                       ? "…"
-                      : pendingUpdateRequests.toLocaleString()}
+                      : animatedUpdateRequests.toLocaleString()}
                   </div>
                 </div>
               </div>
 
               {/* Category chart */}
-              <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-sm font-semibold text-slate-700 mb-3">
-                  Reports by category ({timeRange})
-                </h2>
-                <ChartBar dataMap={categoryCounts} loading={statsLoading} />
+              <div className="mt-4 relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 rounded-2xl" />
+                <div className="relative">
+                  <h2 className="text-sm font-semibold text-slate-700 mb-3">
+                    Reports by category ({timeRange})
+                  </h2>
+                  <ChartBar dataMap={categoryCounts} loading={statsLoading} />
+                </div>
               </div>
             </section>
           )}
@@ -658,7 +800,7 @@ export default function StaffDashboard({
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full md:w-auto">
                     <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={reportFilters.status}
                       onChange={(e) => {
                         setReportPage(1);
@@ -676,7 +818,7 @@ export default function StaffDashboard({
                       <option value="rejected">Rejected</option>
                     </select>
                     <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={reportFilters.type}
                       onChange={(e) => {
                         setReportPage(1);
@@ -698,7 +840,7 @@ export default function StaffDashboard({
                     </select>
                     <input
                       type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={reportFilters.date_from}
                       onChange={(e) => {
                         setReportPage(1);
@@ -710,7 +852,7 @@ export default function StaffDashboard({
                     />
                     <input
                       type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={reportFilters.date_to}
                       onChange={(e) => {
                         setReportPage(1);
@@ -721,7 +863,7 @@ export default function StaffDashboard({
                       }}
                     />
                     <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={reportPerPage}
                       onChange={(e) => {
                         setReportPage(1);
@@ -768,7 +910,7 @@ export default function StaffDashboard({
                             </td>
                             <td className="py-2">
                               <button
-                                className="text-[#0038A8] underline underline-offset-4"
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
                                 onClick={() => openReportDetail(r.id)}
                               >
                                 View
@@ -782,7 +924,7 @@ export default function StaffDashboard({
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <button
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
                       onClick={() => setReportPage((p) => Math.max(1, p - 1))}
                       disabled={reportPage <= 1}
                     >
@@ -795,7 +937,7 @@ export default function StaffDashboard({
                       onPage={(p) => setReportPage(p)}
                     />
                     <button
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
                       onClick={() => setReportPage((p) => p + 1)}
                       disabled={reports.length < reportPerPage}
                     >
@@ -820,7 +962,7 @@ export default function StaffDashboard({
                     <div className="hidden md:block" />
                     <input
                       type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={feedbackFilters.date_from}
                       onChange={(e) => {
                         setFeedbackPage(1);
@@ -832,7 +974,7 @@ export default function StaffDashboard({
                     />
                     <input
                       type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={feedbackFilters.date_to}
                       onChange={(e) => {
                         setFeedbackPage(1);
@@ -843,7 +985,7 @@ export default function StaffDashboard({
                       }}
                     />
                     <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
                       value={feedbackPerPage}
                       onChange={(e) => {
                         setFeedbackPage(1);
@@ -889,7 +1031,7 @@ export default function StaffDashboard({
                         </div>
                         <div className="pt-1">
                           <button
-                            className="text-[#0038A8] underline underline-offset-4"
+                            className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
                             onClick={() => setViewFeedback(f)}
                           >
                             View
@@ -901,7 +1043,7 @@ export default function StaffDashboard({
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <button
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
                       onClick={() => setFeedbackPage((p) => Math.max(1, p - 1))}
                       disabled={feedbackPage <= 1}
                     >
@@ -914,7 +1056,7 @@ export default function StaffDashboard({
                       onPage={(p) => setFeedbackPage(p)}
                     />
                     <button
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn"
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
                       onClick={() => setFeedbackPage((p) => p + 1)}
                       disabled={feedback.length < feedbackPerPage}
                     >
@@ -1021,7 +1163,7 @@ export default function StaffDashboard({
                           </td>
                           <td className="py-2">
                             <button
-                              className="text-[#0038A8] underline underline-offset-4"
+                              className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
                               onClick={() => setViewUser(u)}
                             >
                               View
@@ -1126,7 +1268,7 @@ export default function StaffDashboard({
                             </td>
                             <td className="py-2">
                               <button
-                                className="text-[#0038A8] underline underline-offset-4"
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
                                 onClick={() => setViewUpdate(u)}
                               >
                                 View
@@ -1328,22 +1470,44 @@ function SideLink({
   label,
   active,
   onClick,
+  icon,
+  collapsed,
 }: {
   label: string;
   active?: boolean;
   onClick: () => void;
+  icon?: React.ReactNode;
+  collapsed?: boolean;
 }) {
   return (
-    <button
-      className={`mt-1 w-[15rem] text-left rounded-lg px-3 py-2 ${
-        active
-          ? "bg-slate-50 text-[#1e3a8a] font-semibold"
-          : "text-white/90 hover:bg-white/10"
-      }`}
-      onClick={onClick}
-    >
-      {label}
-    </button>
+    <div className="relative group">
+      <button
+        className={`w-full ${
+          collapsed ? "justify-center" : "text-left"
+        } rounded-lg px-3 py-2.5 transition-all duration-200 outline-offset-2 focus:outline-2 focus:outline-[#FCD116] ${
+          active
+            ? "bg-white/20 text-white font-semibold ring-1 ring-white/30 shadow-lg transform scale-105 animate-pulse"
+            : "text-white/90 hover:bg-white/10 hover:scale-105 hover:shadow-md"
+        } flex items-center gap-3 relative overflow-hidden`}
+        onClick={onClick}
+      >
+        {active && (
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FCD116]/20 via-transparent to-[#FCD116]/20 animate-pulse" />
+        )}
+        <div className="relative z-10 flex items-center gap-3">
+          {icon}
+          {!collapsed && (
+            <span className="transition-all duration-200">{label}</span>
+          )}
+        </div>
+      </button>
+      {collapsed && (
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+          {label}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full border-4 border-transparent border-r-slate-900" />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1444,36 +1608,6 @@ function ChartBar({
         <Bar data={data} options={options} />
       )}
     </div>
-  );
-}
-
-/* Icons via Material Icons (see index.html snippet below) */
-function IconInbox() {
-  return (
-    <span className="material-icons-outlined text-white text-[18px] leading-none">
-      inbox
-    </span>
-  );
-}
-function IconSpinner() {
-  return (
-    <span className="material-icons-outlined text-white text-[18px] leading-none">
-      autorenew
-    </span>
-  );
-}
-function IconCheck() {
-  return (
-    <span className="material-icons-outlined text-white text-[18px] leading-none">
-      check_circle
-    </span>
-  );
-}
-function IconX() {
-  return (
-    <span className="material-icons-outlined text-white text-[18px] leading-none">
-      cancel
-    </span>
   );
 }
 
@@ -1601,14 +1735,31 @@ function ReportDetailsModal({
   const [progress, setProgress] = useState<ReportProgress>(report.progress);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [resFiles, setResFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [localReport, setLocalReport] = useState(report);
+
+  // Auto-hide notifications
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const save = async () => {
     try {
       setSaving(true);
       setError(null);
+      setSuccess(null);
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(`${API_URL}/reports/${report.id}/progress`, {
         method: "POST",
@@ -1620,9 +1771,12 @@ function ReportDetailsModal({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update");
+
+      setSuccess("✅ Report status updated successfully!");
+      setLocalReport((prev) => ({ ...prev, progress }));
       onProgressChanged(progress);
     } catch (e: any) {
-      setError(e?.message || "Failed to update");
+      setError(e?.message || "Failed to update report status");
     } finally {
       setSaving(false);
     }
@@ -1633,9 +1787,13 @@ function ReportDetailsModal({
     try {
       setUploading(true);
       setError(null);
+      setSuccess(null);
       const fd = new FormData();
       Array.from(resFiles).forEach((f) => fd.append("photos[]", f));
-      if (markResolved) fd.append("mark_resolved", "1");
+      if (markResolved) {
+        fd.append("mark_resolved", "1");
+        setProgress("resolved"); // Update local state immediately
+      }
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(
         `${API_URL}/reports/${report.id}/resolution-photos`,
@@ -1651,7 +1809,15 @@ function ReportDetailsModal({
         resolution_photos?: string[];
       };
       setLocalReport((r) => ({ ...r, ...updated } as any));
-      if (updated.progress === "resolved") onProgressChanged("resolved");
+
+      if (markResolved) {
+        setSuccess(
+          "✅ Resolution photos uploaded and report marked as resolved!"
+        );
+        onProgressChanged("resolved");
+      } else {
+        setSuccess("✅ Resolution photos uploaded successfully!");
+      }
       setResFiles(null);
     } catch (e: any) {
       setError(e?.message || "Upload failed");
@@ -1664,6 +1830,7 @@ function ReportDetailsModal({
     <Modal
       title={`Report ${report.report_id}`}
       onClose={onClose}
+      size="4xl"
       actions={
         <div className="flex gap-2">
           <button
@@ -1683,6 +1850,16 @@ function ReportDetailsModal({
         </div>
       }
     >
+      {/* Success Notification */}
+      {success && (
+        <div className="mb-4 relative rounded-xl border border-emerald-300 bg-emerald-50/90 backdrop-blur-md px-4 py-3 shadow-lg animate-in slide-in-from-top-2 duration-300">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent rounded-xl" />
+          <div className="relative flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-emerald-700 font-medium">{success}</span>
+          </div>
+        </div>
+      )}
       {error && (
         <div className="mb-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {error}
