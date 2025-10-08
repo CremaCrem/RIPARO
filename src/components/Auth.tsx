@@ -44,6 +44,7 @@ export default function Auth({
   // ID document for verification during signup
   const [idDoc, setIdDoc] = useState<File | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const allowSignup = !loginOnly && role === "citizen";
 
@@ -52,6 +53,29 @@ export default function Auth({
       setMode("login");
     }
   }, [allowSignup, mode]);
+
+  // Close mobile menu when role changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [role]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuOpen) {
+        const target = event.target as HTMLElement;
+        if (!target.closest("[data-mobile-menu]")) {
+          setMobileMenuOpen(false);
+        }
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [mobileMenuOpen]);
 
   // Reset portal-specific state when role changes (citizen/admin/mayor) or mode changes
   useEffect(() => {
@@ -314,6 +338,7 @@ export default function Auth({
               </p>
             </div>
           </div>
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
             <a
               className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
@@ -346,8 +371,109 @@ export default function Auth({
               Administration
             </a>
           </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+            aria-label="Toggle mobile menu"
+            data-mobile-menu
+          >
+            <svg
+              className="w-6 h-6 text-slate-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {mobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
         </div>
       </header>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div
+          className="md:hidden bg-white border-b border-slate-200/50 shadow-lg"
+          data-mobile-menu
+        >
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex flex-col gap-2">
+              <a
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  role === "citizen"
+                    ? "bg-[#0038A8] text-white shadow-sm"
+                    : "text-slate-600 hover:text-[#0038A8] hover:bg-slate-50"
+                }`}
+                href="#/login/citizen"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                  <span className="text-lg">👥</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Citizen Portal</div>
+                  <div className="text-xs opacity-75">
+                    Submit reports and track services
+                  </div>
+                </div>
+              </a>
+              <a
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  role === "mayor"
+                    ? "bg-[#0038A8] text-white shadow-sm"
+                    : "text-slate-600 hover:text-[#0038A8] hover:bg-slate-50"
+                }`}
+                href="#/login/mayor"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                  <span className="text-lg">🏛️</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Mayor's Office</div>
+                  <div className="text-xs opacity-75">
+                    Executive oversight and decisions
+                  </div>
+                </div>
+              </a>
+              <a
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  role === "admin"
+                    ? "bg-[#0038A8] text-white shadow-sm"
+                    : "text-slate-600 hover:text-[#0038A8] hover:bg-slate-50"
+                }`}
+                href="#/login/admin"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                  <span className="text-lg">⚖️</span>
+                </div>
+                <div>
+                  <div className="font-semibold">Administration</div>
+                  <div className="text-xs opacity-75">
+                    Manage municipal operations
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Role banner */}
       <div className="px-6 md:px-12 py-4">

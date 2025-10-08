@@ -102,6 +102,7 @@ export default function StaffDashboard({
   const [tab, setTab] = useState<StaffTab>("dashboard");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Dashboard stats state
   const [timeRange, setTimeRange] = useState<"day" | "week" | "month" | "year">(
@@ -548,11 +549,139 @@ export default function StaffDashboard({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-[#0e2a7a] text-white px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src={RIPARO_Logo}
+            alt="RIPARO"
+            className="h-8 w-8 object-contain filter brightness-0 invert"
+          />
+          <div>
+            <div className="text-sm font-semibold leading-none">RIPARO</div>
+            <div className="text-[10px] text-white/70 leading-none mt-0.5">
+              Report. Process. Resolve.
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Toggle mobile menu"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            {mobileMenuOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </button>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+          <div className="fixed left-0 top-0 h-full w-64 bg-[#0e2a7a] text-white overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center gap-3 mb-6">
+                <img
+                  src={RIPARO_Logo}
+                  alt="RIPARO"
+                  className="h-10 w-10 object-contain filter brightness-0 invert"
+                />
+                <div>
+                  <div className="text-base font-semibold leading-none">
+                    RIPARO
+                  </div>
+                  <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                    Report. Process. Resolve.
+                  </div>
+                </div>
+              </div>
+
+              <nav className="space-y-2">
+                <MobileSideLink
+                  label="Dashboard"
+                  active={tab === "dashboard"}
+                  icon={<HomeIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setTab("dashboard");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Reports"
+                  active={tab === "reports"}
+                  icon={<DocumentTextIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setTab("reports");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Feedback"
+                  active={tab === "feedback"}
+                  icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setTab("feedback");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Users"
+                  active={tab === "users"}
+                  icon={<UserGroupIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setTab("users");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Update Requests"
+                  active={tab === "updates"}
+                  icon={<ClipboardDocumentListIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setTab("updates");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <button
+                  className="w-full text-left rounded-lg px-3 py-2.5 text-white/90 transition-all duration-200 hover:bg-white/10 flex items-center gap-3 mt-4"
+                  onClick={() => {
+                    setConfirmLogout(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex min-h-screen">
         <aside
           className={`${
             collapsed ? "w-16" : "w-64"
-          } shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
+          } hidden lg:block shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
         >
           <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-[#2563eb] via-[#0038A8] to-[#001a57] animate-pulse" />
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
@@ -650,7 +779,7 @@ export default function StaffDashboard({
           </nav>
         </aside>
 
-        <main className="flex-1 p-4 md:p-8 relative overflow-hidden">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 relative overflow-hidden">
           {/* Background decorative elements */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-[#0038A8]/5 to-[#FCD116]/5 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-r from-[#FCD116]/5 to-[#0038A8]/5 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -691,7 +820,7 @@ export default function StaffDashboard({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-4">
                 {stats.map((s) => {
                   // Get the corresponding animated count
                   let animatedCount;
@@ -715,62 +844,64 @@ export default function StaffDashboard({
                   return (
                     <div
                       key={s.label}
-                      className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
+                      className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                       <div className="relative flex items-center justify-between">
-                        <div className="text-sm font-semibold text-slate-700">
+                        <div className="text-xs sm:text-sm font-semibold text-slate-700">
                           {s.label}
                         </div>
-                        <div className={`p-2 rounded-lg ${s.color} shadow-sm`}>
-                          <s.icon className="h-4 w-4 text-white" />
+                        <div
+                          className={`p-1.5 sm:p-2 rounded-lg ${s.color} shadow-sm`}
+                        >
+                          <s.icon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                         </div>
                       </div>
-                      <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                      <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                         {statsLoading ? "…" : animatedCount.toLocaleString()}
                       </div>
                     </div>
                   );
                 })}
-                <div className="group relative rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative rounded-xl border border-blue-200 bg-blue-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <div className="relative flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-700">
+                    <div className="text-xs sm:text-sm font-semibold text-slate-700">
                       Total Feedback
                     </div>
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm">
-                      <InboxIcon className="h-4 w-4 text-white" />
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm">
+                      <InboxIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                  <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                     {statsLoading ? "…" : animatedFeedback.toLocaleString()}
                   </div>
                 </div>
-                <div className="group relative rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <div className="relative flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-700">
+                    <div className="text-xs sm:text-sm font-semibold text-slate-700">
                       New Users Pending
                     </div>
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm">
-                      <ClockIcon className="h-4 w-4 text-white" />
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm">
+                      <ClockIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                  <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                     {statsLoading ? "…" : animatedPendingUsers.toLocaleString()}
                   </div>
                 </div>
-                <div className="group relative rounded-xl border border-purple-200 bg-purple-50 p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative rounded-xl border border-purple-200 bg-purple-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <div className="relative flex items-center justify-between">
-                    <div className="text-sm font-semibold text-slate-700">
+                    <div className="text-xs sm:text-sm font-semibold text-slate-700">
                       Update Requests Pending
                     </div>
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-sm">
-                      <ClipboardDocumentListIcon className="h-4 w-4 text-white" />
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-sm">
+                      <ClipboardDocumentListIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
-                  <div className="mt-3 text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                  <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                     {statsLoading
                       ? "…"
                       : animatedUpdateRequests.toLocaleString()}
@@ -779,7 +910,7 @@ export default function StaffDashboard({
               </div>
 
               {/* Category chart */}
-              <div className="mt-4 relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="mt-4 relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-4 sm:p-5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 rounded-2xl" />
                 <div className="relative">
                   <h2 className="text-sm font-semibold text-slate-700 mb-3">
@@ -887,10 +1018,12 @@ export default function StaffDashboard({
                     <table className="w-full text-sm">
                       <thead className="text-left text-slate-600 border-b border-slate-100">
                         <tr>
-                          <th className="py-2">Date Submitted</th>
-                          <th className="py-2">Category</th>
-                          <th className="py-2">Status</th>
-                          <th className="py-2">Actions</th>
+                          <th className="py-2 text-xs sm:text-sm">
+                            Date Submitted
+                          </th>
+                          <th className="py-2 text-xs sm:text-sm">Category</th>
+                          <th className="py-2 text-xs sm:text-sm">Status</th>
+                          <th className="py-2 text-xs sm:text-sm">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -899,10 +1032,10 @@ export default function StaffDashboard({
                             key={r.id}
                             className="border-b border-slate-100 last:border-0"
                           >
-                            <td className="py-2">
-                              {new Date(r.created_at).toLocaleString()}
+                            <td className="py-2 text-xs">
+                              {new Date(r.created_at).toLocaleDateString()}
                             </td>
-                            <td className="py-2 capitalize">
+                            <td className="py-2 capitalize text-xs">
                               {r.type.replaceAll("_", " ")}
                             </td>
                             <td className="py-2">
@@ -910,7 +1043,7 @@ export default function StaffDashboard({
                             </td>
                             <td className="py-2">
                               <button
-                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
                                 onClick={() => openReportDetail(r.id)}
                               >
                                 View
@@ -1007,7 +1140,7 @@ export default function StaffDashboard({
                       ? "Loading..."
                       : feedbackError || `${feedbackTotal} total result(s)`}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {feedback.map((f) => (
                       <div
                         key={f.id}
@@ -1131,26 +1264,37 @@ export default function StaffDashboard({
                   <table className="w-full text-sm">
                     <thead className="text-left text-slate-600">
                       <tr>
-                        <th className="py-2">Name</th>
-                        <th className="py-2">Email</th>
-                        <th className="py-2">Barangay/Zone</th>
-                        <th className="py-2">Status</th>
-                        <th className="py-2">Actions</th>
+                        <th className="py-2 text-xs sm:text-sm">Name</th>
+                        <th className="py-2 text-xs sm:text-sm hidden sm:table-cell">
+                          Email
+                        </th>
+                        <th className="py-2 text-xs sm:text-sm hidden md:table-cell">
+                          Barangay/Zone
+                        </th>
+                        <th className="py-2 text-xs sm:text-sm">Status</th>
+                        <th className="py-2 text-xs sm:text-sm">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {users.map((u) => (
                         <tr key={u.id} className="border-t border-slate-100">
-                          <td className="py-2">
-                            {u.first_name} {u.last_name}
+                          <td className="py-2 text-xs">
+                            <div className="font-medium">
+                              {u.first_name} {u.last_name}
+                            </div>
+                            <div className="text-slate-500 sm:hidden">
+                              {u.email}
+                            </div>
                           </td>
-                          <td className="py-2">{u.email}</td>
-                          <td className="py-2">
+                          <td className="py-2 hidden sm:table-cell text-xs">
+                            {u.email}
+                          </td>
+                          <td className="py-2 hidden md:table-cell text-xs">
                             {u.barangay || ""} {u.zone ? `• ${u.zone}` : ""}
                           </td>
                           <td className="py-2">
                             <span
-                              className={`inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] ${
+                              className={`inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1 text-[10px] sm:text-[12px] ${
                                 u.verification_status === "verified"
                                   ? "text-emerald-700"
                                   : u.verification_status === "rejected"
@@ -1163,7 +1307,7 @@ export default function StaffDashboard({
                           </td>
                           <td className="py-2">
                             <button
-                              className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
+                              className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
                               onClick={() => setViewUser(u)}
                             >
                               View
@@ -1229,10 +1373,14 @@ export default function StaffDashboard({
                   <table className="w-full text-sm">
                     <thead className="text-left text-slate-600">
                       <tr>
-                        <th className="py-2">Requested At</th>
-                        <th className="py-2">User</th>
-                        <th className="py-2">Summary</th>
-                        <th className="py-2">Actions</th>
+                        <th className="py-2 text-xs sm:text-sm">
+                          Requested At
+                        </th>
+                        <th className="py-2 text-xs sm:text-sm">User</th>
+                        <th className="py-2 text-xs sm:text-sm hidden md:table-cell">
+                          Summary
+                        </th>
+                        <th className="py-2 text-xs sm:text-sm">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1255,20 +1403,29 @@ export default function StaffDashboard({
                         if (u.password) changes.push("password");
                         return (
                           <tr key={u.id} className="border-t border-slate-100">
-                            <td className="py-2">
-                              {new Date(u.created_at).toLocaleString()}
+                            <td className="py-2 text-xs">
+                              {new Date(u.created_at).toLocaleDateString()}
                             </td>
-                            <td className="py-2">
-                              {u.user
-                                ? `${u.user.first_name} ${u.user.last_name}`
-                                : `#${u.user_id}`}
+                            <td className="py-2 text-xs">
+                              <div className="font-medium">
+                                {u.user
+                                  ? `${u.user.first_name} ${u.user.last_name}`
+                                  : `#${u.user_id}`}
+                              </div>
+                              {changes.length > 0 && (
+                                <div className="text-slate-500 md:hidden text-[10px]">
+                                  {changes.slice(0, 2).join(", ")}
+                                  {changes.length > 2 &&
+                                    ` +${changes.length - 2}`}
+                                </div>
+                              )}
                             </td>
-                            <td className="py-2">
+                            <td className="py-2 hidden md:table-cell text-xs">
                               {changes.length ? changes.join(", ") : "-"}
                             </td>
                             <td className="py-2">
                               <button
-                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
                                 onClick={() => setViewUpdate(u)}
                               >
                                 View
@@ -1600,7 +1757,7 @@ function ChartBar({
     },
   };
   return (
-    <div className="h-48 md:h-[32rem]">
+    <div className="h-64 sm:h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">
       {loading && <div className="text-sm text-slate-600 mb-2">Loading…</div>}
       {labels.length === 0 ? (
         <div className="text-sm text-slate-500">No data</div>
@@ -1684,7 +1841,7 @@ function UserDetailsModal({
       }
     >
       <div className="space-y-3 text-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <div className="text-slate-600">Email</div>
             <div className="font-medium">{user.email}</div>
@@ -2195,5 +2352,32 @@ function Pagination({
       ))}
       <span className="ml-2 text-xs text-slate-500">of {totalPages}</span>
     </div>
+  );
+}
+
+// Mobile sidebar link component
+function MobileSideLink({
+  label,
+  active,
+  onClick,
+  icon,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <button
+      className={`w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 ${
+        active
+          ? "bg-white/20 text-white font-semibold ring-1 ring-white/30 shadow-lg"
+          : "text-white/90 hover:bg-white/10"
+      } flex items-center gap-3`}
+      onClick={onClick}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }

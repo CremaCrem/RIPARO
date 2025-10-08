@@ -58,6 +58,7 @@ export default function CitizenDashboard({
   const [active, setActive] = useState<TabKey>("dashboard");
   const [collapsed, setCollapsed] = useState(false);
   const [showLogout, setShowLogout] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [myReports, setMyReports] = useState<ApiReport[]>([]);
   const [resolvedFeed, setResolvedFeed] = useState<ApiReport[]>([]);
   const [loadingResolved, setLoadingResolved] = useState(false);
@@ -183,11 +184,148 @@ export default function CitizenDashboard({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+      {/* Mobile Header */}
+      <header className="lg:hidden bg-[#0e2a7a] text-white px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img
+            src={RIPARO_Logo}
+            alt="RIPARO"
+            className="h-8 w-8 object-contain filter brightness-0 invert"
+          />
+          <div>
+            <div className="text-sm font-semibold leading-none">RIPARO</div>
+            <div className="text-[10px] text-white/70 leading-none mt-0.5">
+              Report. Process. Resolve.
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Toggle mobile menu"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            {mobileMenuOpen ? (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            ) : (
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            )}
+          </svg>
+        </button>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+          <div className="fixed left-0 top-0 h-full w-64 bg-[#0e2a7a] text-white overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center gap-3 mb-6">
+                <img
+                  src={RIPARO_Logo}
+                  alt="RIPARO"
+                  className="h-10 w-10 object-contain filter brightness-0 invert"
+                />
+                <div>
+                  <div className="text-base font-semibold leading-none">
+                    RIPARO
+                  </div>
+                  <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                    Report. Process. Resolve.
+                  </div>
+                </div>
+              </div>
+
+              <nav className="space-y-2">
+                <MobileSideLink
+                  label="Dashboard"
+                  active={active === "dashboard"}
+                  icon={<HomeIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("dashboard");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Submit Report"
+                  active={active === "submit"}
+                  icon={<DocumentPlusIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("submit");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Track My Report"
+                  active={active === "track"}
+                  icon={<ClipboardDocumentCheckIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("track");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Feedback"
+                  active={active === "feedback"}
+                  icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("feedback");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Edit Profile"
+                  active={active === "profile"}
+                  icon={<UserCircleIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("profile");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <MobileSideLink
+                  label="Help"
+                  active={active === "help"}
+                  icon={<QuestionMarkCircleIcon className="h-5 w-5" />}
+                  onClick={() => {
+                    setActive("help");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <button
+                  className="w-full text-left rounded-lg px-3 py-2.5 text-white/90 transition-all duration-200 hover:bg-white/10 flex items-center gap-3 mt-4"
+                  onClick={() => {
+                    setShowLogout(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex min-h-screen">
         <aside
           className={`${
             collapsed ? "w-16" : "w-64"
-          } shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
+          } hidden lg:block shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
         >
           <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-[#2563eb] via-[#0038A8] to-[#001a57] animate-pulse" />
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
@@ -292,7 +430,7 @@ export default function CitizenDashboard({
           </nav>
         </aside>
 
-        <main className="flex-1 p-4 md:p-8 relative overflow-hidden">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 relative overflow-hidden">
           {/* Background decorative elements */}
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-r from-[#0038A8]/5 to-[#FCD116]/5 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-r from-[#FCD116]/5 to-[#0038A8]/5 rounded-full blur-3xl animate-pulse delay-1000" />
@@ -320,7 +458,7 @@ export default function CitizenDashboard({
                     Barangay Kinalansan, Zone 4 • Verified
                   </p>
                 </div>
-                <div className="px-6 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="px-4 sm:px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {[
                     {
                       label: "Open",
@@ -377,20 +515,20 @@ export default function CitizenDashboard({
                     return (
                       <div
                         key={i}
-                        className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
+                        className={`group relative rounded-xl border ${s.borderColor} ${s.bgColor} p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden`}
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                         <div className="relative flex items-center justify-between">
-                          <span className="text-sm font-semibold text-slate-700">
+                          <span className="text-xs sm:text-sm font-semibold text-slate-700">
                             {s.label}
                           </span>
                           <div
-                            className={`p-2 rounded-lg ${s.color} shadow-sm`}
+                            className={`p-1.5 sm:p-2 rounded-lg ${s.color} shadow-sm`}
                           >
-                            <s.icon className="h-4 w-4 text-white" />
+                            <s.icon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                           </div>
                         </div>
-                        <div className="mt-3 text-2xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
+                        <div className="mt-2 sm:mt-3 text-xl sm:text-2xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
                           {animatedCount}
                         </div>
                       </div>
@@ -414,7 +552,7 @@ export default function CitizenDashboard({
                   {loadingResolved ? (
                     <div className="text-sm text-slate-600">Loading…</div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {recentCards.map((r) => (
                         <ReportCard
                           key={r.report_id}
@@ -901,7 +1039,7 @@ function SubmitReport({
         </div>
       )}
 
-      <form className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-5 shadow-lg hover:shadow-xl transition-all duration-300">
+      <form className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300">
         <label
           className={`block ${touchedMissing.submitter_name ? "shake" : ""}`}
         >
@@ -959,7 +1097,7 @@ function SubmitReport({
         </label>
 
         <label
-          className={`block md:col-span-2 ${
+          className={`block sm:col-span-2 ${
             touchedMissing.address ? "shake" : ""
           }`}
         >
@@ -979,7 +1117,7 @@ function SubmitReport({
         </label>
 
         <label
-          className={`block md:col-span-2 ${
+          className={`block sm:col-span-2 ${
             touchedMissing.type ? "shake" : ""
           }`}
         >
@@ -1005,7 +1143,7 @@ function SubmitReport({
         </label>
 
         <label
-          className={`block md:col-span-2 ${
+          className={`block sm:col-span-2 ${
             touchedMissing.description ? "shake" : ""
           }`}
         >
@@ -1025,7 +1163,7 @@ function SubmitReport({
           />
         </label>
 
-        <label className="block md:col-span-2">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">
             Upload photos (optional)
           </span>
@@ -1061,7 +1199,7 @@ function SubmitReport({
           )}
         </label>
 
-        <div className="md:col-span-2 flex items-center justify-end gap-2 pt-2">
+        <div className="sm:col-span-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
           <button
             type="reset"
             onClick={() => {
@@ -1153,12 +1291,16 @@ function TrackFeedback({
           <table className="w-full text-sm">
             <thead className="text-left text-slate-600">
               <tr>
-                <th className="py-2">Submission ID</th>
-                <th className="py-2">Date Submitted</th>
-                <th className="py-2">Category</th>
-                <th className="py-2">Address</th>
-                <th className="py-2">Status</th>
-                <th className="py-2">Actions</th>
+                <th className="py-2 text-xs sm:text-sm">Submission ID</th>
+                <th className="py-2 text-xs sm:text-sm hidden sm:table-cell">
+                  Date Submitted
+                </th>
+                <th className="py-2 text-xs sm:text-sm">Category</th>
+                <th className="py-2 text-xs sm:text-sm hidden md:table-cell">
+                  Address
+                </th>
+                <th className="py-2 text-xs sm:text-sm">Status</th>
+                <th className="py-2 text-xs sm:text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1172,25 +1314,27 @@ function TrackFeedback({
                       isHighlight ? "animate-pulse bg-amber-50" : ""
                     }`}
                   >
-                    <td className="py-2 font-mono text-[12px]">
+                    <td className="py-2 font-mono text-[10px] sm:text-[12px]">
                       {r.report_id}
                     </td>
-                    <td className="py-2">
-                      {new Date(r.created_at).toLocaleString()}
+                    <td className="py-2 hidden sm:table-cell text-xs">
+                      {new Date(r.created_at).toLocaleDateString()}
                     </td>
-                    <td className="py-2 capitalize">
+                    <td className="py-2 capitalize text-xs">
                       {r.type.replaceAll("_", " ")}
                     </td>
-                    <td className="py-2">{r.address}</td>
+                    <td className="py-2 hidden md:table-cell text-xs">
+                      {r.address}
+                    </td>
                     <td className="py-2">
                       <StatusPill status={r.progress as any} />
                     </td>
                     <td className="py-2">
                       <button
-                        className="text-[#0038A8] underline underline-offset-4"
+                        className="text-[#0038A8] underline underline-offset-4 text-xs"
                         onClick={() => onView(r)}
                       >
-                        View details
+                        View
                       </button>
                     </td>
                   </tr>
@@ -1530,7 +1674,7 @@ function EditProfile() {
       {error && <div className="mt-3 notice notice-error">{error}</div>}
 
       <form
-        className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+        className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           // Validate first to show missing highlights before confirm
@@ -1539,7 +1683,7 @@ function EditProfile() {
           setShowConfirm(true);
         }}
       >
-        <label className="block md:col-span-2">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">First name</span>
           <input
             name="first_name"
@@ -1549,7 +1693,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block md:col-span-2">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">
             Middle name (optional)
           </span>
@@ -1561,7 +1705,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block md:col-span-2">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">Last name</span>
           <input
             name="last_name"
@@ -1614,7 +1758,7 @@ function EditProfile() {
         </label>
 
         <label
-          className={`block md:col-span-2 ${
+          className={`block sm:col-span-2 ${
             touchedMissing.id_document ? "shake" : ""
           }`}
         >
@@ -1630,7 +1774,7 @@ function EditProfile() {
           />
         </label>
 
-        <div className="md:col-span-2 flex items-center justify-end gap-2 pt-2">
+        <div className="sm:col-span-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
           <button
             type="reset"
             onClick={reset}
@@ -1747,6 +1891,33 @@ function StatusPill({
       <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
       <span className="text-[12px] text-slate-700">{text}</span>
     </span>
+  );
+}
+
+// Mobile sidebar link component
+function MobileSideLink({
+  label,
+  active,
+  onClick,
+  icon,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <button
+      className={`w-full text-left rounded-lg px-3 py-2.5 transition-all duration-200 ${
+        active
+          ? "bg-white/20 text-white font-semibold ring-1 ring-white/30 shadow-lg"
+          : "text-white/90 hover:bg-white/10"
+      } flex items-center gap-3`}
+      onClick={onClick}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
   );
 }
 
