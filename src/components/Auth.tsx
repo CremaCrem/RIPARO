@@ -289,7 +289,7 @@ export default function Auth({
   };
 
   return (
-    <div className="relative h-screen w-full flex flex-col overflow-hidden">
+    <div className="relative min-h-screen md:h-screen w-full flex flex-col md:overflow-hidden">
       {/* Background image with Philippine flag overlay */}
       <div
         className="absolute inset-0 -z-10 bg-cover bg-center"
@@ -303,7 +303,7 @@ export default function Auth({
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#CE1126] via-[#FCD116] to-[#0038A8]" />
 
-      <header className="px-6 md:px-12 py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50">
+      <header className="sticky top-0 z-50 md:static px-6 md:px-12 py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -503,7 +503,7 @@ export default function Auth({
         </div>
       </div>
 
-      <main className="px-6 md:px-12 py-6 flex-1 overflow-y-auto">
+      <main className="px-6 md:px-12 py-6 flex-1 md:overflow-y-auto">
         <div className="max-w-7xl mx-auto h-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
             {mode !== "signup" && (
@@ -1022,7 +1022,7 @@ export default function Auth({
         </div>
       </main>
 
-      <footer className="px-6 md:px-12 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 mt-auto">
+      <footer className="px-6 md:px-12 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 md:mt-auto">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-center md:text-left">
