@@ -303,14 +303,14 @@ export default function Auth({
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#CE1126] via-[#FCD116] to-[#0038A8]" />
 
-      <header className="sticky top-0 z-50 md:static px-6 md:px-12 py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50">
+      <header className="sticky top-0 z-50 md:static px-6 md:px-8 lg:px-12 py-4 md:py-4 lg:py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="relative">
               <img
                 src={RIPARO_Logo}
                 alt="RIPARO Logo"
-                className="h-12 w-12 object-contain"
+                className="h-10 w-10 md:h-12 md:w-12 object-contain"
                 onError={(e) => {
                   // Fallback to text logo if image fails to load
                   const target = e.currentTarget as HTMLImageElement;
@@ -320,17 +320,17 @@ export default function Auth({
                 }}
               />
               <div
-                className="h-12 w-12 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-lg shadow-lg"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg"
                 style={{ display: "none" }}
               >
                 R
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-800 leading-none">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-none">
                 RIPARO
               </h1>
-              <p className="text-sm text-slate-600 leading-none mt-1 font-medium">
+              <p className="text-xs md:text-sm text-slate-600 leading-none mt-1 font-medium">
                 Report • Process • Resolve
               </p>
               <p className="text-xs text-slate-500 leading-none mt-0.5">
@@ -476,20 +476,22 @@ export default function Auth({
       )}
 
       {/* Role banner */}
-      <div className="px-6 md:px-12 py-4">
+      <div className="px-6 md:px-8 lg:px-12 py-3 md:py-3 lg:py-4">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-6 py-4">
+            <div className="bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-4 md:px-5 lg:px-6 py-3 md:py-3 lg:py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center">
-                    <span className="text-xl">{theme.icon}</span>
+                  <div className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10 rounded-lg bg-white/20 flex items-center justify-center">
+                    <span className="text-lg md:text-xl">{theme.icon}</span>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">
+                    <h2 className="text-base md:text-lg font-bold text-white">
                       {theme.label}
                     </h2>
-                    <p className="text-sm text-white/80">{theme.description}</p>
+                    <p className="text-xs md:text-sm text-white/80">
+                      {theme.description}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -503,20 +505,20 @@ export default function Auth({
         </div>
       </div>
 
-      <main className="px-6 md:px-12 py-6 flex-1 md:overflow-y-auto">
+      <main className="px-6 md:px-8 lg:px-12 py-4 md:py-5 lg:py-6 flex-1 md:overflow-y-auto">
         <div className="max-w-7xl mx-auto h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center h-full">
             {mode !== "signup" && (
               <section className="hidden lg:flex flex-col justify-center">
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight">
+                <div className="space-y-4 md:space-y-5 lg:space-y-6">
+                  <div className="space-y-3 md:space-y-4">
+                    <h1 className="text-3xl md:text-4xl xl:text-5xl font-bold text-white leading-tight">
                       Digital Governance for
                       <span className="block text-[#FCD116]">
                         Barangay San Jose
                       </span>
                     </h1>
-                    <p className="text-lg text-white/90 leading-relaxed">
+                    <p className="text-base md:text-lg text-white/90 leading-relaxed">
                       A modern reporting system connecting citizens with local
                       government in Camarines Sur. Submit, track, and resolve
                       community concerns efficiently.
@@ -528,13 +530,15 @@ export default function Auth({
 
             <section className={`${mode === "signup" ? "lg:col-span-2" : ""}`}>
               <div className="w-full max-w-md mx-auto lg:max-w-none">
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden">
-                  <div className="px-8 py-6 border-b border-slate-100">
+                <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden">
+                  <div className="px-6 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6 border-b border-slate-100">
                     <div>
-                      <h2 className="text-2xl font-bold text-slate-800">
+                      <h2 className="text-xl md:text-2xl font-bold text-slate-800">
                         {title}
                       </h2>
-                      <p className="text-slate-600 mt-1">{subtitle}</p>
+                      <p className="text-sm md:text-base text-slate-600 mt-1">
+                        {subtitle}
+                      </p>
                     </div>
                   </div>
 
@@ -570,7 +574,10 @@ export default function Auth({
                     </div>
                   )}
 
-                  <form className="px-8 py-6 space-y-6" onSubmit={handleSubmit}>
+                  <form
+                    className="px-6 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6 space-y-4 md:space-y-5 lg:space-y-6"
+                    onSubmit={handleSubmit}
+                  >
                     {allowSignup && mode === "signup" && (
                       <>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1022,7 +1029,7 @@ export default function Auth({
         </div>
       </main>
 
-      <footer className="px-6 md:px-12 py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 md:mt-auto">
+      <footer className="px-6 md:px-8 lg:px-12 py-3 md:py-3 lg:py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 md:mt-auto">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-center md:text-left">

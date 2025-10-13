@@ -190,7 +190,7 @@ export default function CitizenDashboard({
           <img
             src={RIPARO_Logo}
             alt="RIPARO"
-            className="h-8 w-8 object-contain filter brightness-0 invert"
+            className="h-8 w-8 object-contain"
           />
           <div>
             <div className="text-sm font-semibold leading-none">RIPARO</div>
@@ -238,7 +238,7 @@ export default function CitizenDashboard({
                 <img
                   src={RIPARO_Logo}
                   alt="RIPARO"
-                  className="h-10 w-10 object-contain filter brightness-0 invert"
+                  className="h-10 w-10 object-contain"
                 />
                 <div>
                   <div className="text-base font-semibold leading-none">
@@ -337,14 +337,14 @@ export default function CitizenDashboard({
                 <img
                   src={RIPARO_Logo}
                   alt="RIPARO"
-                  className="h-8 w-8 object-contain filter brightness-0 invert"
+                  className="h-8 w-8 object-contain"
                 />
               ) : (
                 <div className="flex items-center gap-3">
                   <img
                     src={RIPARO_Logo}
                     alt="RIPARO"
-                    className="h-10 w-10 object-contain filter brightness-0 invert"
+                    className="h-10 w-10 object-contain"
                   />
                   <div>
                     <div className="text-base font-semibold leading-none tracking-wide">
@@ -421,7 +421,7 @@ export default function CitizenDashboard({
             <button
               className={`mt-4 w-full ${
                 collapsed ? "justify-center" : "text-left"
-              } rounded-lg px-3 py-2 text-white/90 outline-offset-2 transition-all duration-200 focus:outline-2 focus:outline-[#FCD116] hover:bg-white/10 hover:scale-105 flex items-center gap-3 group`}
+              } rounded-lg px-3 py-2 text-white/90 outline-offset-2 transition-all duration-200 focus:outline-2 focus:outline-white hover:bg-white hover:text-black hover:scale-105 flex items-center gap-3 group`}
               onClick={() => setShowLogout(true)}
             >
               <ArrowRightOnRectangleIcon className="h-5 w-5" />
@@ -866,16 +866,13 @@ function SideLink({
       <button
         className={`w-full ${
           collapsed ? "justify-center" : "text-left"
-        } rounded-lg px-3 py-2.5 transition-all duration-200 outline-offset-2 focus:outline-2 focus:outline-[#FCD116] ${
+        } rounded-lg px-3 py-2.5 transition-all duration-200 outline-offset-2 focus:outline-2 focus:outline-white ${
           active
-            ? "bg-white/20 text-white font-semibold ring-1 ring-white/30 shadow-lg transform scale-105 animate-pulse"
-            : "text-white/90 hover:bg-white/10 hover:scale-105 hover:shadow-md"
+            ? "bg-white text-black font-semibold ring-1 ring-white shadow-lg transform scale-105"
+            : "text-white/90 hover:bg-white hover:text-black hover:scale-105 hover:shadow-md"
         } flex items-center gap-3 relative overflow-hidden`}
         onClick={onClick}
       >
-        {active && (
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FCD116]/20 via-transparent to-[#FCD116]/20 animate-pulse" />
-        )}
         <div className="relative z-10 flex items-center gap-3">
           {icon}
           {!collapsed && (
