@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resolveAssetUrl } from "../config";
 
 export type ReportCardProps = {
   reportId: string;
@@ -45,19 +46,19 @@ export default function ReportCard({
           onClick={(e) => {
             e.stopPropagation();
             const url = showAfter && afterUrl ? afterUrl : thumbUrl;
-            if (url) setLightboxUrl(url);
+            if (url) setLightboxUrl(resolveAssetUrl(url));
           }}
         >
           {showAfter && afterUrl ? (
             <img
-              src={afterUrl}
+              src={resolveAssetUrl(afterUrl)}
               alt="After"
               className="h-full w-full object-cover"
             />
           ) : (
             thumbUrl && (
               <img
-                src={thumbUrl}
+                src={resolveAssetUrl(thumbUrl)}
                 alt="Before"
                 className="h-full w-full object-cover"
               />

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import Modal from "./Modal";
-import { API_URL } from "../config";
+import { API_URL, resolveAssetUrl } from "../config";
 import ReportCard from "./ReportCard";
 import ReportTimeline from "./ReportTimeline";
 import RIPARO_Logo from "../assets/RIPARO_Logo.png";
@@ -753,7 +753,7 @@ export default function CitizenDashboard({
                         </div>
                         <div className="h-36 rounded-md overflow-hidden border border-slate-200">
                           <img
-                            src={detailsReport.photos[0]}
+                            src={resolveAssetUrl(detailsReport.photos[0])}
                             alt="before"
                             className="h-full w-full object-cover"
                           />
@@ -766,7 +766,9 @@ export default function CitizenDashboard({
                         <div className="text-xs text-slate-500 mb-1">After</div>
                         <div className="h-36 rounded-md overflow-hidden border border-slate-200">
                           <img
-                            src={(detailsReport as any).resolution_photos[0]}
+                            src={resolveAssetUrl(
+                              (detailsReport as any).resolution_photos[0]
+                            )}
                             alt="after"
                             className="h-full w-full object-cover"
                           />

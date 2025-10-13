@@ -34,7 +34,7 @@ ChartJS.register(
   ChartLegend
 );
 import Modal from "./Modal";
-import { API_URL } from "../config";
+import { API_URL, resolveAssetUrl } from "../config";
 
 type StaffTab =
   | "dashboard"
@@ -2079,7 +2079,7 @@ function ReportDetailsModal({
               {localReport.photos.map((src, i) => (
                 <img
                   key={i}
-                  src={src}
+                  src={resolveAssetUrl(src)}
                   alt="attachment"
                   className="h-24 w-36 rounded-md object-cover border border-slate-200"
                 />
@@ -2098,7 +2098,7 @@ function ReportDetailsModal({
                 (src: string, i: number) => (
                   <img
                     key={i}
-                    src={src}
+                    src={resolveAssetUrl(src)}
                     alt="after"
                     className="h-24 w-36 rounded-md object-cover border border-slate-200"
                   />
