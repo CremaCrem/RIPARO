@@ -276,7 +276,7 @@ export default function MayorDashboard({
         icon: CheckCircleIcon,
       },
       {
-        label: "Rejected",
+        label: "Disapprove",
         value: reportsRejected,
         color: "bg-gradient-to-r from-red-500 to-red-600",
         bgColor: "bg-red-50",
@@ -950,7 +950,7 @@ export default function MayorDashboard({
                       <option value="in_review">In review</option>
                       <option value="assigned">Assigned</option>
                       <option value="resolved">Resolved</option>
-                      <option value="rejected">Rejected</option>
+                      <option value="rejected">Disapprove</option>
                     </select>
                     <select
                       className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
@@ -1493,6 +1493,8 @@ function StaffStatusPill({ status }: { status: ReportProgress }) {
   const label =
     status === "in_review"
       ? "In review"
+      : status === "rejected"
+      ? "Disapprove"
       : status.charAt(0).toUpperCase() + status.slice(1);
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">

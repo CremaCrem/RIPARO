@@ -32,6 +32,8 @@ export default function ReportCard({
   const statusLabel =
     status === "in_review"
       ? "In review"
+      : status === "rejected"
+      ? "Disapprove"
       : status.charAt(0).toUpperCase() + status.slice(1);
 
   const [showAfter, setShowAfter] = useState(false);

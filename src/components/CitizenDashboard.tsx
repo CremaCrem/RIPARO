@@ -19,13 +19,7 @@ import {
   ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
-type TabKey =
-  | "dashboard"
-  | "submit"
-  | "track"
-  | "feedback"
-  | "profile"
-  | "help";
+type TabKey = "dashboard" | "submit" | "track" | "profile" | "help";
 
 // API report shape
 type ApiReport = {
@@ -67,6 +61,7 @@ export default function CitizenDashboard({
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [detailsReport, setDetailsReport] = useState<ApiReport | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
 
   // Calculate real dashboard statistics
@@ -279,15 +274,6 @@ export default function CitizenDashboard({
                   }}
                 />
                 <MobileSideLink
-                  label="Feedback"
-                  active={active === "feedback"}
-                  icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setActive("feedback");
-                    setMobileMenuOpen(false);
-                  }}
-                />
-                <MobileSideLink
                   label="Edit Profile"
                   active={active === "profile"}
                   icon={<UserCircleIcon className="h-5 w-5" />}
@@ -398,13 +384,6 @@ export default function CitizenDashboard({
               onClick={() => setActive("track")}
             />
             <SideLink
-              label="Feedback"
-              active={active === "feedback"}
-              icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
-              collapsed={collapsed}
-              onClick={() => setActive("feedback")}
-            />
-            <SideLink
               label="Edit Profile"
               active={active === "profile"}
               icon={<UserCircleIcon className="h-5 w-5" />}
@@ -461,7 +440,7 @@ export default function CitizenDashboard({
                 <div className="px-4 sm:px-6 pb-5 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {[
                     {
-                      label: "Open",
+                      label: "Received",
                       color: "bg-gradient-to-r from-amber-400 to-amber-500",
                       icon: ClockIcon,
                       count: dashboardStats.open,
@@ -496,7 +475,7 @@ export default function CitizenDashboard({
                     // Get the corresponding animated count
                     let animatedCount;
                     switch (s.label) {
-                      case "Open":
+                      case "Received":
                         animatedCount = animatedOpen;
                         break;
                       case "Assigned":
@@ -578,6 +557,7 @@ export default function CitizenDashboard({
                 description="Provide details so your LGU can act quickly."
               >
                 <SubmitReport
+                  userData={_userData}
                   onNotice={(msg) => setNotice(msg)}
                   onSubmitted={() => {
                     (async () => {
@@ -615,16 +595,6 @@ export default function CitizenDashboard({
                   setRowRef={(id, el) => (rowRefs.current[id] = el)}
                   onView={(r) => openDetails(r)}
                 />
-              </Panel>
-            </section>
-          )}
-          {active === "feedback" && (
-            <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-              <Panel
-                title="Submit Feedback"
-                description="Help us improve services with your suggestions."
-              >
-                <FeedbackForm onNotice={(msg) => setNotice(msg)} />
               </Panel>
             </section>
           )}
@@ -682,14 +652,22 @@ export default function CitizenDashboard({
       {detailsReport && (
         <Modal
           title={`Report ${detailsReport.report_id}`}
-          onClose={() => setDetailsReport(null)}
+          onClose={() => {
+            setDetailsReport(null);
+            setShowFeedbackForm(false);
+          }}
           actions={
-            <button
-              className="rounded-md bg-slate-200 px-3 py-2 text-slate-800"
-              onClick={() => setDetailsReport(null)}
-            >
-              Close
-            </button>
+            <div className="flex gap-2">
+              <button
+                className="rounded-md bg-slate-200 px-3 py-2 text-slate-800"
+                onClick={() => {
+                  setDetailsReport(null);
+                  setShowFeedbackForm(false);
+                }}
+              >
+                Close
+              </button>
+            </div>
           }
         >
           <div className="space-y-4">
@@ -711,6 +689,8 @@ export default function CitizenDashboard({
                 <div className="font-medium capitalize">
                   {detailsReport.progress === "in_review"
                     ? "In review"
+                    : detailsReport.progress === "rejected"
+                    ? "Disapprove"
                     : detailsReport.progress}
                 </div>
               </div>
@@ -778,6 +758,36 @@ export default function CitizenDashboard({
                 </div>
               </div>
             ) : null}
+
+            {/* Feedback Section */}
+            <div className="border-t border-slate-200 pt-4">
+              {!showFeedbackForm ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-700">
+                      Have feedback about this report?
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Share your thoughts with the LGU
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowFeedbackForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#0038A8] hover:bg-[#0038A8]/90 rounded-lg transition-colors"
+                  >
+                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                    Send Feedback
+                  </button>
+                </div>
+              ) : (
+                <ReportFeedbackForm
+                  reportId={detailsReport.report_id}
+                  userEmail={_userData?.email || ""}
+                  onNotice={(msg) => setNotice(msg)}
+                  onClose={() => setShowFeedbackForm(false)}
+                />
+              )}
+            </div>
           </div>
         </Modal>
       )}
@@ -895,10 +905,13 @@ function SideLink({
 function SubmitReport({
   onSubmitted,
   onNotice,
+  userData,
 }: {
   onSubmitted: () => void;
   onNotice: (msg: string) => void;
+  userData: any;
 }) {
+  const [isSelfReport, setIsSelfReport] = useState(true);
   const [form, setForm] = useState({
     submitter_name: "",
     age: "",
@@ -916,6 +929,28 @@ function SubmitReport({
   const [touchedMissing, setTouchedMissing] = useState<Record<string, boolean>>(
     {}
   );
+
+  // Auto-fill form when self-report is selected
+  useEffect(() => {
+    if (isSelfReport && userData) {
+      setForm((prev) => ({
+        ...prev,
+        submitter_name: `${userData.first_name || ""} ${
+          userData.middle_name || ""
+        } ${userData.last_name || ""}`.trim(),
+        address: `${userData.barangay || ""}, ${userData.zone || ""}`.replace(
+          /^,\s*|,\s*$/g,
+          ""
+        ),
+      }));
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        submitter_name: "",
+        address: "",
+      }));
+    }
+  }, [isSelfReport, userData]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -1038,26 +1073,76 @@ function SubmitReport({
         </div>
       )}
 
-      <form className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Report Type Toggle */}
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">
+              Report Type
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Choose who you're reporting for
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className={`text-sm font-medium ${
+                !isSelfReport ? "text-slate-600" : "text-[#0038A8]"
+              }`}
+            >
+              On behalf of someone
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsSelfReport(!isSelfReport)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                isSelfReport ? "bg-[#0038A8]" : "bg-slate-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isSelfReport ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+            <span
+              className={`text-sm font-medium ${
+                isSelfReport ? "text-[#0038A8]" : "text-slate-600"
+              }`}
+            >
+              Self report
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <form className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300">
         <label
-          className={`block ${touchedMissing.submitter_name ? "shake" : ""}`}
+          className={`block sm:col-span-3 ${
+            touchedMissing.submitter_name ? "shake" : ""
+          }`}
         >
           <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-            Name of person submitting
+            {isSelfReport ? "Your name" : "Name of person submitting"}
           </span>
           <input
             name="submitter_name"
             value={form.submitter_name}
             onChange={handleChange}
+            disabled={isSelfReport}
             className={`w-full rounded-lg border ${
               touchedMissing.submitter_name
                 ? "border-red-400 bg-red-50"
+                : isSelfReport
+                ? "border-slate-300 bg-slate-50"
                 : "border-slate-300 bg-white"
             } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 
-        <label className={`block ${touchedMissing.age ? "shake" : ""}`}>
+        <label
+          className={`block sm:col-span-1 ${touchedMissing.age ? "shake" : ""}`}
+        >
           <span className="mb-1 block text-sm text-slate-700 required-asterisk">
             Age
           </span>
@@ -1074,7 +1159,11 @@ function SubmitReport({
           />
         </label>
 
-        <label className={`block ${touchedMissing.gender ? "shake" : ""}`}>
+        <label
+          className={`block sm:col-span-1 ${
+            touchedMissing.gender ? "shake" : ""
+          }`}
+        >
           <span className="mb-1 block text-sm text-slate-700 required-asterisk">
             Gender
           </span>
@@ -1095,28 +1184,33 @@ function SubmitReport({
           </select>
         </label>
 
+        <div className="sm:col-span-1"></div>
+
         <label
-          className={`block sm:col-span-2 ${
+          className={`block sm:col-span-3 ${
             touchedMissing.address ? "shake" : ""
           }`}
         >
           <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-            Address
+            {isSelfReport ? "Your address" : "Address"}
           </span>
           <input
             name="address"
             value={form.address}
             onChange={handleChange}
+            disabled={isSelfReport}
             className={`w-full rounded-lg border ${
               touchedMissing.address
                 ? "border-red-400 bg-red-50"
+                : isSelfReport
+                ? "border-slate-300 bg-slate-50"
                 : "border-slate-300 bg-white"
             } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
         </label>
 
         <label
-          className={`block sm:col-span-2 ${
+          className={`block sm:col-span-3 ${
             touchedMissing.type ? "shake" : ""
           }`}
         >
@@ -1142,7 +1236,7 @@ function SubmitReport({
         </label>
 
         <label
-          className={`block sm:col-span-2 ${
+          className={`block sm:col-span-3 ${
             touchedMissing.description ? "shake" : ""
           }`}
         >
@@ -1162,7 +1256,7 @@ function SubmitReport({
           />
         </label>
 
-        <label className="block sm:col-span-2">
+        <label className="block sm:col-span-3">
           <span className="mb-1 block text-sm text-slate-700">
             Upload photos (optional)
           </span>
@@ -1198,7 +1292,7 @@ function SubmitReport({
           )}
         </label>
 
-        <div className="sm:col-span-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
+        <div className="sm:col-span-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
           <button
             type="reset"
             onClick={() => {
@@ -1276,6 +1370,52 @@ function TrackFeedback({
   setRowRef: (id: string, el: HTMLTableRowElement | null) => void;
   onView: (r: ApiReport) => void;
 }) {
+  const [filters, setFilters] = useState({
+    dateFrom: "",
+    dateTo: "",
+    category: "",
+    status: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Filter reports based on current filters
+  const filteredReports = useMemo(() => {
+    return reports.filter((report) => {
+      // Date filter
+      if (filters.dateFrom) {
+        const reportDate = new Date(report.created_at);
+        const fromDate = new Date(filters.dateFrom);
+        if (reportDate < fromDate) return false;
+      }
+      if (filters.dateTo) {
+        const reportDate = new Date(report.created_at);
+        const toDate = new Date(filters.dateTo);
+        toDate.setHours(23, 59, 59, 999); // End of day
+        if (reportDate > toDate) return false;
+      }
+
+      // Category filter
+      if (filters.category && report.type !== filters.category) return false;
+
+      // Status filter
+      if (filters.status && report.progress !== filters.status) return false;
+
+      return true;
+    });
+  }, [reports, filters]);
+
+  const clearFilters = () => {
+    setFilters({
+      dateFrom: "",
+      dateTo: "",
+      category: "",
+      status: "",
+    });
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
   return (
     <div>
       <h1 className="text-xl font-bold tracking-tight">Track My Feedback</h1>
@@ -1286,6 +1426,127 @@ function TrackFeedback({
             {error}
           </div>
         )}
+
+        {/* Integrated Filters */}
+        <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-700">Filters</h3>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded-lg transition-colors"
+            >
+              <svg
+                className={`w-4 h-4 transition-transform ${
+                  showFilters ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+              {showFilters ? "Hide" : "Show"} Filters
+            </button>
+          </div>
+
+          {showFilters && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Date From */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Date From
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={(e) =>
+                      handleFilterChange("dateFrom", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                  />
+                </div>
+
+                {/* Date To */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Date To
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={(e) =>
+                      handleFilterChange("dateTo", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={filters.category}
+                    onChange={(e) =>
+                      handleFilterChange("category", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="infrastructure">Infrastructure</option>
+                    <option value="sanitation">Sanitation</option>
+                    <option value="community_welfare">Community welfare</option>
+                    <option value="behavoural_concerns">
+                      Behavioral concerns
+                    </option>
+                  </select>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Status
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      handleFilterChange("status", e.target.value)
+                    }
+                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                  >
+                    <option value="">All Status</option>
+                    <option value="pending">Received</option>
+                    <option value="in_review">In Review</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="rejected">Disapprove</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Filter Actions */}
+              <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                <div className="text-sm text-slate-600">
+                  Showing {filteredReports.length} of {reports.length} reports
+                </div>
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  Clear Filters
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-slate-600">
@@ -1303,7 +1564,7 @@ function TrackFeedback({
               </tr>
             </thead>
             <tbody>
-              {reports.map((r) => {
+              {filteredReports.map((r) => {
                 const isHighlight = highlightId === r.report_id;
                 return (
                   <tr
@@ -1344,212 +1605,12 @@ function TrackFeedback({
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-          <Legend color="bg-orange-500" label="Pending / In review" />
+          <Legend color="bg-orange-500" label="Received / In review" />
           <Legend color="bg-blue-600" label="Assigned" />
           <Legend color="bg-emerald-600" label="Resolved" />
-          <Legend color="bg-red-600" label="Rejected" />
+          <Legend color="bg-red-600" label="Disapprove" />
         </div>
       </div>
-    </div>
-  );
-}
-
-function FeedbackForm({ onNotice }: { onNotice: (msg: string) => void }) {
-  const [form, setForm] = useState({
-    subject: "",
-    anonymous: false,
-    contact_email: "",
-    message: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [confirm, setConfirm] = useState(false);
-  const [touchedMissing, setTouchedMissing] = useState<Record<string, boolean>>(
-    {}
-  );
-
-  const subjectMax = 150; // must match DB
-
-  const onChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type, checked } = e.target as any;
-    setForm((f) => ({
-      ...f,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const reset = () => {
-    setForm({ subject: "", anonymous: false, contact_email: "", message: "" });
-    setError(null);
-    setSuccess(null);
-    setTouchedMissing({});
-  };
-
-  const submit = async () => {
-    // simple client validation
-    if (!form.message.trim()) {
-      setError("Please complete the required fields.");
-      setTouchedMissing((t) => ({ ...t, message: true }));
-      setConfirm(false);
-      return;
-    }
-    if (!form.anonymous && !form.contact_email.trim()) {
-      setError("Please complete the required fields.");
-      setTouchedMissing((t) => ({ ...t, contact_email: true }));
-      setConfirm(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const payload: any = {
-        subject: form.subject || undefined,
-        anonymous: form.anonymous,
-        contact_email: form.anonymous ? undefined : form.contact_email,
-        message: form.message,
-      };
-      const token = localStorage.getItem("auth_token") || "";
-      const res = await fetch(`${API_URL}/feedback`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Submission failed");
-      const msg = "✅ Feedback sent. Thank you!";
-      setSuccess(msg);
-      onNotice(msg);
-      reset();
-    } catch (e: any) {
-      setError(e?.message || "Submission failed");
-    } finally {
-      setLoading(false);
-      setConfirm(false);
-    }
-  };
-
-  return (
-    <div>
-      <h1 className="text-xl font-bold tracking-tight">Submit Feedback</h1>
-
-      {success && <div className="mt-3 notice notice-success">{success}</div>}
-      {error && <div className="mt-3 notice notice-error">{error}</div>}
-
-      <form className="mt-4 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <label className="block">
-          <span className="mb-1 block text-sm text-slate-700">Title</span>
-          <input
-            name="subject"
-            value={form.subject}
-            onChange={onChange}
-            maxLength={subjectMax}
-            placeholder="Optional"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400"
-          />
-          <div className="mt-1 text-xs text-slate-500">
-            {form.subject.length}/{subjectMax}
-          </div>
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            name="anonymous"
-            checked={form.anonymous}
-            onChange={onChange}
-          />
-          <span className="text-sm text-slate-700">Send anonymously</span>
-        </label>
-
-        {!form.anonymous && (
-          <label
-            className={`block ${touchedMissing.contact_email ? "shake" : ""}`}
-          >
-            <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-              Contact email
-            </span>
-            <input
-              type="email"
-              name="contact_email"
-              value={form.contact_email}
-              onChange={onChange}
-              placeholder="your@email.com"
-              className={`w-full rounded-lg border ${
-                touchedMissing.contact_email
-                  ? "border-red-400"
-                  : "border-slate-300"
-              } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
-            />
-          </label>
-        )}
-
-        <label className={`block ${touchedMissing.message ? "shake" : ""}`}>
-          <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-            Message
-          </span>
-          <textarea
-            name="message"
-            rows={6}
-            value={form.message}
-            onChange={onChange}
-            className={`w-full rounded-lg border ${
-              touchedMissing.message ? "border-red-400" : "border-slate-300"
-            } bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400`}
-          />
-        </label>
-
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-md btn-soft px-4 py-2"
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => setConfirm(true)}
-            className="rounded-md btn-primary px-4 py-2 disabled:opacity-50 btn"
-          >
-            {loading ? "Submitting..." : "Submit"}
-          </button>
-        </div>
-      </form>
-
-      {confirm && (
-        <Modal
-          title="Send feedback?"
-          onClose={() => setConfirm(false)}
-          actions={
-            <div className="flex gap-2">
-              <button
-                className="rounded-md px-3 py-2 btn-soft"
-                onClick={() => setConfirm(false)}
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-md px-3 py-2 btn-primary btn"
-                onClick={submit}
-                disabled={loading}
-              >
-                {loading ? "Sending..." : "Confirm"}
-              </button>
-            </div>
-          }
-        >
-          Your feedback will be sent to the LGU.
-        </Modal>
-      )}
     </div>
   );
 }
@@ -1884,6 +1945,8 @@ function StatusPill({
   const text =
     status === "in_review"
       ? "In review"
+      : status === "rejected"
+      ? "Disapprove"
       : status.charAt(0).toUpperCase() + status.slice(1);
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
@@ -1917,6 +1980,180 @@ function MobileSideLink({
       {icon}
       <span>{label}</span>
     </button>
+  );
+}
+
+function ReportFeedbackForm({
+  reportId,
+  userEmail,
+  onNotice,
+  onClose,
+}: {
+  reportId: string;
+  userEmail: string;
+  onNotice: (msg: string) => void;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState({
+    subject: `Feedback for Report ${reportId}`,
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [touchedMissing, setTouchedMissing] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const onChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const reset = () => {
+    setForm({ subject: `Feedback for Report ${reportId}`, message: "" });
+    setError(null);
+    setSuccess(null);
+    setTouchedMissing({});
+  };
+
+  const submit = async () => {
+    // Simple client validation
+    if (!form.message.trim()) {
+      const errorMsg = "Please enter your feedback message.";
+      setError(errorMsg);
+      setTouchedMissing((t) => ({ ...t, message: true }));
+      onNotice(`❌ ${errorMsg}`);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const payload = {
+        subject: form.subject,
+        contact_email: userEmail,
+        message: form.message,
+        report_id: reportId, // Include report ID for context
+      };
+
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(`${API_URL}/feedback`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Submission failed");
+
+      const msg = "✅ Feedback sent successfully!";
+      setSuccess(msg);
+      onNotice(msg);
+      reset();
+      onClose();
+    } catch (e: any) {
+      const errorMsg = e?.message || "Submission failed";
+      setError(errorMsg);
+      onNotice(`❌ ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Header with close button */}
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-slate-700">Send Feedback</h4>
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Success/Error Messages */}
+      {success && (
+        <div className="rounded-md border border-emerald-300 bg-emerald-50 p-2 text-xs text-emerald-700">
+          {success}
+        </div>
+      )}
+      {error && (
+        <div className="rounded-md border border-red-300 bg-red-50 p-2 text-xs text-red-700">
+          {error}
+        </div>
+      )}
+
+      {/* Compact Form */}
+      <div className="space-y-2">
+        {/* Subject - Hidden, auto-generated */}
+        <input
+          name="subject"
+          value={form.subject}
+          onChange={onChange}
+          className="hidden"
+        />
+
+        {/* Message Input */}
+        <div className={touchedMissing.message ? "shake" : ""}>
+          <textarea
+            name="message"
+            rows={3}
+            value={form.message}
+            onChange={onChange}
+            placeholder="Share your feedback about this report..."
+            className={`w-full rounded-lg border ${
+              touchedMissing.message
+                ? "border-red-400 bg-red-50"
+                : "border-slate-300 bg-white"
+            } px-3 py-2 text-sm text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200 resize-none`}
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="text-xs text-slate-500">Sending as: {userEmail}</div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={reset}
+              className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              disabled={loading || !form.message.trim()}
+              onClick={submit}
+              className="rounded-md px-3 py-1.5 text-xs font-medium bg-[#0038A8] text-white hover:bg-[#0038A8]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loading ? "Sending..." : "Send"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

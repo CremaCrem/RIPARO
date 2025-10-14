@@ -310,7 +310,7 @@ export default function Auth({
               <img
                 src={RIPARO_Logo}
                 alt="RIPARO Logo"
-                className="h-10 w-10 md:h-12 md:w-12 object-contain"
+                className="h-16 w-16 md:h-20 md:w-20 object-contain"
                 onError={(e) => {
                   // Fallback to text logo if image fails to load
                   const target = e.currentTarget as HTMLImageElement;
@@ -320,7 +320,7 @@ export default function Auth({
                 }}
               />
               <div
-                className="h-10 w-10 md:h-12 md:w-12 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg"
+                className="h-16 w-16 md:h-20 md:w-20 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg"
                 style={{ display: "none" }}
               >
                 R
@@ -493,11 +493,6 @@ export default function Auth({
                       {theme.description}
                     </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-[#FCD116]" />
-                  <div className="h-2 w-2 rounded-full bg-white/40" />
-                  <div className="h-2 w-2 rounded-full bg-white/40" />
                 </div>
               </div>
             </div>

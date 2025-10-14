@@ -281,7 +281,7 @@ export default function StaffDashboard({
         icon: CheckCircleIcon,
       },
       {
-        label: "Rejected",
+        label: "Disapprove",
         value: reportsRejected,
         color: "bg-gradient-to-r from-red-500 to-red-600",
         bgColor: "bg-red-50",
@@ -870,7 +870,7 @@ export default function StaffDashboard({
                       Total Feedback
                     </div>
                     <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm">
-                      <InboxIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <ChatBubbleLeftRightIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
                   <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
@@ -884,7 +884,7 @@ export default function StaffDashboard({
                       New Users Pending
                     </div>
                     <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm">
-                      <ClockIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <UserGroupIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
                   <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
@@ -946,7 +946,7 @@ export default function StaffDashboard({
                       <option value="in_review">In review</option>
                       <option value="assigned">Assigned</option>
                       <option value="resolved">Resolved</option>
-                      <option value="rejected">Rejected</option>
+                      <option value="rejected">Disapprove</option>
                     </select>
                     <select
                       className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
@@ -1696,6 +1696,8 @@ function StaffStatusPill({ status }: { status: ReportProgress }) {
   const label =
     status === "in_review"
       ? "In review"
+      : status === "rejected"
+      ? "Disapprove"
       : status.charAt(0).toUpperCase() + status.slice(1);
   return (
     <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
