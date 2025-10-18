@@ -3,7 +3,7 @@ import Modal from "./Modal";
 import { API_URL, resolveAssetUrl } from "../config";
 import ReportCard from "./ReportCard";
 import ReportTimeline from "./ReportTimeline";
-import RIPARO_Logo from "../assets/RIPARO_Logo.png";
+import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
 import {
   HomeIcon,
   DocumentPlusIcon,
@@ -464,7 +464,7 @@ export default function CitizenDashboard({
                       borderColor: "border-emerald-200",
                     },
                     {
-                      label: "Rejected",
+                      label: "Disapprove",
                       color: "bg-gradient-to-r from-red-500 to-red-600",
                       icon: XCircleIcon,
                       count: dashboardStats.rejected,
@@ -484,7 +484,7 @@ export default function CitizenDashboard({
                       case "Resolved":
                         animatedCount = animatedResolved;
                         break;
-                      case "Rejected":
+                      case "Disapprove":
                         animatedCount = animatedRejected;
                         break;
                       default:
@@ -552,10 +552,7 @@ export default function CitizenDashboard({
           )}
           {active === "submit" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-              <Panel
-                title="Submit Report"
-                description="Provide details so your LGU can act quickly."
-              >
+              <Panel description="Provide details so your LGU can act quickly.">
                 <SubmitReport
                   userData={_userData}
                   onNotice={(msg) => setNotice(msg)}
@@ -583,10 +580,7 @@ export default function CitizenDashboard({
           )}
           {active === "track" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-              <Panel
-                title="Track My Report"
-                description="Follow the progress of your submissions."
-              >
+              <Panel description="Follow the progress of your submissions.">
                 <TrackFeedback
                   loading={loadingReports}
                   error={reportsError}
@@ -600,20 +594,14 @@ export default function CitizenDashboard({
           )}
           {active === "profile" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-              <Panel
-                title="Edit Profile"
-                description="Update your information and submit for verification."
-              >
+              <Panel description="Update your information and submit for verification.">
                 <EditProfile />
               </Panel>
             </section>
           )}
           {active === "help" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
-              <Panel
-                title="Help & Support"
-                description="Frequently asked questions and guidance."
-              >
+              <Panel description="Frequently asked questions and guidance.">
                 <HelpContent />
               </Panel>
             </section>
@@ -656,6 +644,7 @@ export default function CitizenDashboard({
             setDetailsReport(null);
             setShowFeedbackForm(false);
           }}
+          size="4xl"
           actions={
             <div className="flex gap-2">
               <button
@@ -670,123 +659,216 @@ export default function CitizenDashboard({
             </div>
           }
         >
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm text-slate-600">Submitted by</div>
-              <div className="font-semibold">
-                {detailsReport.submitter_name}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm text-slate-600">Type</div>
-                <div className="font-medium capitalize">
-                  {detailsReport.type.replaceAll("_", " ")}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-slate-600">Status</div>
-                <div className="font-medium capitalize">
-                  {detailsReport.progress === "in_review"
-                    ? "In review"
-                    : detailsReport.progress === "rejected"
-                    ? "Disapprove"
-                    : detailsReport.progress}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-slate-600">Description</div>
-              <div className="text-slate-800 whitespace-pre-wrap">
-                {detailsReport.description}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-slate-600 mb-2">Progress</div>
-              <ReportTimeline
-                status={detailsReport.progress}
-                dates={
-                  {
-                    submitted:
-                      detailsReport.date_generated || detailsReport.created_at,
-                    pending:
-                      detailsReport.date_generated || detailsReport.created_at,
-                    [detailsReport.progress]: detailsReport.updated_at,
-                  } as any
-                }
-              />
-            </div>
-            {(Array.isArray(detailsReport.photos) &&
-              detailsReport.photos.length > 0) ||
-            (Array.isArray((detailsReport as any).resolution_photos) &&
-              (detailsReport as any).resolution_photos.length > 0) ? (
-              <div>
-                <div className="text-sm text-slate-600 mb-2">
-                  Before & After
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Array.isArray(detailsReport.photos) &&
-                    detailsReport.photos.length > 0 && (
-                      <div>
-                        <div className="text-xs text-slate-500 mb-1">
-                          Before
-                        </div>
-                        <div className="h-36 rounded-md overflow-hidden border border-slate-200">
-                          <img
-                            src={resolveAssetUrl(detailsReport.photos[0])}
-                            alt="before"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Column - Report Details */}
+            <div className="space-y-6">
+              {/* Header Card */}
+              <div className="relative rounded-xl bg-gradient-to-br from-[#0038A8]/5 via-[#FCD116]/5 to-white border border-slate-200 p-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-xl" />
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        Report Details
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        Submitted by {detailsReport.submitter_name}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          detailsReport.progress === "resolved"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : detailsReport.progress === "assigned"
+                            ? "bg-blue-100 text-blue-700"
+                            : detailsReport.progress === "rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-amber-100 text-amber-700"
+                        }`}
+                      >
+                        {detailsReport.progress === "in_review"
+                          ? "In Review"
+                          : detailsReport.progress === "rejected"
+                          ? "Disapprove"
+                          : detailsReport.progress.charAt(0).toUpperCase() +
+                            detailsReport.progress.slice(1)}
                       </div>
-                    )}
-                  {Array.isArray((detailsReport as any).resolution_photos) &&
-                    (detailsReport as any).resolution_photos.length > 0 && (
-                      <div>
-                        <div className="text-xs text-slate-500 mb-1">After</div>
-                        <div className="h-36 rounded-md overflow-hidden border border-slate-200">
-                          <img
-                            src={resolveAssetUrl(
-                              (detailsReport as any).resolution_photos[0]
-                            )}
-                            alt="after"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      </div>
-                    )}
-                </div>
-              </div>
-            ) : null}
-
-            {/* Feedback Section */}
-            <div className="border-t border-slate-200 pt-4">
-              {!showFeedbackForm ? (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-700">
-                      Have feedback about this report?
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Share your thoughts with the LGU
-                    </p>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setShowFeedbackForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#0038A8] hover:bg-[#0038A8]/90 rounded-lg transition-colors"
-                  >
-                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
-                    Send Feedback
-                  </button>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/60 rounded-lg p-3">
+                      <div className="text-xs text-slate-500 mb-1">
+                        Category
+                      </div>
+                      <div className="font-semibold text-slate-800 capitalize">
+                        {detailsReport.type.replaceAll("_", " ")}
+                      </div>
+                    </div>
+                    <div className="bg-white/60 rounded-lg p-3">
+                      <div className="text-xs text-slate-500 mb-1">
+                        Submitted
+                      </div>
+                      <div className="font-semibold text-slate-800">
+                        {new Date(
+                          detailsReport.created_at
+                        ).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description Card */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
+                  Description
+                </h4>
+                <div className="text-slate-800 leading-relaxed whitespace-pre-wrap">
+                  {detailsReport.description}
+                </div>
+              </div>
+
+              {/* Progress Timeline */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                  Progress Timeline
+                </h4>
+                <ReportTimeline
+                  status={detailsReport.progress}
+                  dates={
+                    {
+                      submitted:
+                        detailsReport.date_generated ||
+                        detailsReport.created_at,
+                      pending:
+                        detailsReport.date_generated ||
+                        detailsReport.created_at,
+                      [detailsReport.progress]: detailsReport.updated_at,
+                    } as any
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Right Column - Images & Feedback */}
+            <div className="space-y-6">
+              {/* Images Section */}
+              {(Array.isArray(detailsReport.photos) &&
+                detailsReport.photos.length > 0) ||
+              (Array.isArray((detailsReport as any).resolution_photos) &&
+                (detailsReport as any).resolution_photos.length > 0) ? (
+                <div className="bg-white rounded-xl border border-slate-200 p-6">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    Visual Evidence
+                  </h4>
+                  <div className="space-y-4">
+                    {Array.isArray(detailsReport.photos) &&
+                      detailsReport.photos.length > 0 && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-2 font-medium">
+                            Before
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {detailsReport.photos
+                              .slice(0, 4)
+                              .map((photo, index) => (
+                                <div
+                                  key={index}
+                                  className="aspect-video rounded-lg overflow-hidden border border-slate-200"
+                                >
+                                  <img
+                                    src={resolveAssetUrl(photo)}
+                                    alt={`Before ${index + 1}`}
+                                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-200"
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    {Array.isArray((detailsReport as any).resolution_photos) &&
+                      (detailsReport as any).resolution_photos.length > 0 && (
+                        <div>
+                          <div className="text-xs text-slate-500 mb-2 font-medium">
+                            After
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {(detailsReport as any).resolution_photos
+                              .slice(0, 4)
+                              .map((photo: string, index: number) => (
+                                <div
+                                  key={index}
+                                  className="aspect-video rounded-lg overflow-hidden border border-slate-200"
+                                >
+                                  <img
+                                    src={resolveAssetUrl(photo)}
+                                    alt={`After ${index + 1}`}
+                                    className="h-full w-full object-cover hover:scale-105 transition-transform duration-200"
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                  </div>
                 </div>
               ) : (
-                <ReportFeedbackForm
-                  reportId={detailsReport.report_id}
-                  userEmail={_userData?.email || ""}
-                  onNotice={(msg) => setNotice(msg)}
-                  onClose={() => setShowFeedbackForm(false)}
-                />
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 text-center">
+                  <div className="text-slate-400 mb-2">
+                    <svg
+                      className="w-12 h-12 mx-auto"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-slate-500">No images available</p>
+                </div>
               )}
+
+              {/* Feedback Section */}
+              <div className="bg-white rounded-xl border border-slate-200 p-6">
+                <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                  Feedback
+                </h4>
+                {!showFeedbackForm ? (
+                  <div className="text-center py-4">
+                    <div className="text-slate-400 mb-3">
+                      <ChatBubbleLeftRightIcon className="w-8 h-8 mx-auto" />
+                    </div>
+                    <p className="text-sm text-slate-600 mb-4">
+                      Have feedback about this report?
+                    </p>
+                    <button
+                      onClick={() => setShowFeedbackForm(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#0038A8] to-[#2563eb] hover:from-[#0038A8]/90 hover:to-[#2563eb]/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                      Send Feedback
+                    </button>
+                  </div>
+                ) : (
+                  <ReportFeedbackForm
+                    reportId={detailsReport.report_id}
+                    userEmail={_userData?.email || ""}
+                    onNotice={(msg) => setNotice(msg)}
+                    onClose={() => setShowFeedbackForm(false)}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </Modal>
@@ -801,7 +883,7 @@ function Panel({
   children,
   tone = "blue",
 }: {
-  title: string;
+  title?: string;
   description?: string;
   children: React.ReactNode;
   tone?: "blue" | "amber" | "emerald" | "violet" | "indigo";
@@ -845,16 +927,25 @@ function Panel({
       className={`group relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md shadow-[0_20px_50px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_60px_-12px_rgba(0,0,0,0.2)] transition-all duration-300 ${theme.ring} ${theme.accent}`}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 rounded-2xl" />
-      <div
-        className={`relative px-6 py-5 border-b border-slate-100/50 rounded-t-2xl ${theme.header}`}
-      >
-        <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-          {title}
-        </h2>
-        {description && (
-          <p className="mt-0.5 text-sm text-slate-600">{description}</p>
-        )}
-      </div>
+      {title && (
+        <div
+          className={`relative px-6 py-5 border-b border-slate-100/50 rounded-t-2xl ${theme.header}`}
+        >
+          <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            {title}
+          </h2>
+          {description && (
+            <p className="mt-0.5 text-sm text-slate-600">{description}</p>
+          )}
+        </div>
+      )}
+      {!title && description && (
+        <div
+          className={`relative px-6 py-5 border-b border-slate-100/50 rounded-t-2xl ${theme.header}`}
+        >
+          <p className="text-sm text-slate-600">{description}</p>
+        </div>
+      )}
       <div className="relative p-6">{children}</div>
     </div>
   );
@@ -1603,13 +1694,6 @@ function TrackFeedback({
             </tbody>
           </table>
         </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-          <Legend color="bg-orange-500" label="Received / In review" />
-          <Legend color="bg-blue-600" label="Assigned" />
-          <Legend color="bg-emerald-600" label="Resolved" />
-          <Legend color="bg-red-600" label="Disapprove" />
-        </div>
       </div>
     </div>
   );
@@ -1916,15 +2000,6 @@ function HelpContent() {
           </p>
         </section>
       </div>
-    </div>
-  );
-}
-
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className={`inline-block h-3 w-3 rounded-full ${color}`} />
-      <span className="text-slate-600 text-sm">{label}</span>
     </div>
   );
 }

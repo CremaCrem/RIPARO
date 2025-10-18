@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import Modal from "./Modal";
 import ReportCard from "./ReportCard";
 import { API_URL } from "../config";
-import RIPARO_Logo from "../assets/RIPARO_Logo.png";
+import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,

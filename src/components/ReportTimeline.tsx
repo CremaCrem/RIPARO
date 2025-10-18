@@ -25,7 +25,7 @@ export default function ReportTimeline({
     { key: "in_review", label: "In review" },
     { key: "assigned", label: "Assigned" },
     { key: "resolved", label: "Resolved" },
-    { key: "rejected", label: "Rejected" },
+    { key: "rejected", label: "Disapprove" },
   ];
 
   const currentIndex = order.findIndex((s) => s.key === status);

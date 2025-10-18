@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
-import RIPARO_Logo from "../assets/RIPARO_Logo.png";
+import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
 import {
   Chart as ChartJS,
   CategoryScale,
