@@ -595,7 +595,7 @@ export default function CitizenDashboard({
           {active === "profile" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
               <Panel description="Update your information and submit for verification.">
-                <EditProfile />
+                <EditProfile userData={_userData} />
               </Panel>
             </section>
           )}
@@ -1209,7 +1209,7 @@ function SubmitReport({
 
       <form className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-xl border border-slate-200 bg-white/95 backdrop-blur-sm p-4 sm:p-5 shadow-lg hover:shadow-xl transition-all duration-300">
         <label
-          className={`block sm:col-span-3 ${
+          className={`block sm:col-span-1 ${
             touchedMissing.submitter_name ? "shake" : ""
           }`}
         >
@@ -1274,8 +1274,6 @@ function SubmitReport({
             <option value="Prefer not to say">Prefer not to say</option>
           </select>
         </label>
-
-        <div className="sm:col-span-1"></div>
 
         <label
           className={`block sm:col-span-3 ${
@@ -1699,26 +1697,53 @@ function TrackFeedback({
   );
 }
 
-function EditProfile() {
+function EditProfile({ userData }: { userData?: any }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    email: "",
-    mobile_number: "",
-    barangay: "",
-    zone: "",
+  const [form, setForm] = useState(() => ({
+    first_name: userData?.first_name || "",
+    middle_name: userData?.middle_name || "",
+    last_name: userData?.last_name || "",
+    email: userData?.email || "",
+    mobile_number: userData?.mobile_number || "",
+    barangay: userData?.barangay || "",
+    zone: userData?.zone || "",
     password: "",
-  });
+  }));
   const [idDoc, setIdDoc] = useState<File | null>(null);
   const [touchedMissing, setTouchedMissing] = useState<Record<string, boolean>>(
     {}
   );
+
+  // Prefill when userData becomes available, but don't override if user already typed
+  useEffect(() => {
+    if (!userData) return;
+    setForm((prev) => {
+      const isAllEmpty =
+        !prev.first_name &&
+        !prev.middle_name &&
+        !prev.last_name &&
+        !prev.email &&
+        !prev.mobile_number &&
+        !prev.barangay &&
+        !prev.zone &&
+        !prev.password;
+      if (!isAllEmpty) return prev;
+      return {
+        first_name: userData.first_name || "",
+        middle_name: userData.middle_name || "",
+        last_name: userData.last_name || "",
+        email: userData.email || "",
+        mobile_number: userData.mobile_number || "",
+        barangay: userData.barangay || "",
+        zone: userData.zone || "",
+        password: "",
+      };
+    });
+  }, [userData]);
 
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -1732,13 +1757,13 @@ function EditProfile() {
   };
   const reset = () => {
     setForm({
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      email: "",
-      mobile_number: "",
-      barangay: "",
-      zone: "",
+      first_name: userData?.first_name || "",
+      middle_name: userData?.middle_name || "",
+      last_name: userData?.last_name || "",
+      email: userData?.email || "",
+      mobile_number: userData?.mobile_number || "",
+      barangay: userData?.barangay || "",
+      zone: userData?.zone || "",
       password: "",
     });
     setIdDoc(null);
@@ -1818,7 +1843,7 @@ function EditProfile() {
       {error && <div className="mt-3 notice notice-error">{error}</div>}
 
       <form
-        className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm"
+        className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           // Validate first to show missing highlights before confirm
@@ -1827,7 +1852,7 @@ function EditProfile() {
           setShowConfirm(true);
         }}
       >
-        <label className="block sm:col-span-2">
+        <label className="block sm:col-span-1">
           <span className="mb-1 block text-sm text-slate-700">First name</span>
           <input
             name="first_name"
@@ -1837,7 +1862,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block sm:col-span-2">
+        <label className="block sm:col-span-1">
           <span className="mb-1 block text-sm text-slate-700">
             Middle name (optional)
           </span>
@@ -1849,7 +1874,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block sm:col-span-2">
+        <label className="block sm:col-span-1">
           <span className="mb-1 block text-sm text-slate-700">Last name</span>
           <input
             name="last_name"
@@ -1859,7 +1884,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">Email</span>
           <input
             type="email"
@@ -1870,7 +1895,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block">
+        <label className="block sm:col-span-1">
           <span className="mb-1 block text-sm text-slate-700">Password</span>
           <input
             type="password"
@@ -1881,7 +1906,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block">
+        <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">Barangay</span>
           <input
             name="barangay"
@@ -1891,7 +1916,7 @@ function EditProfile() {
           />
         </label>
 
-        <label className="block">
+        <label className="block sm:col-span-1">
           <span className="mb-1 block text-sm text-slate-700">Zone</span>
           <input
             name="zone"
@@ -1902,7 +1927,7 @@ function EditProfile() {
         </label>
 
         <label
-          className={`block sm:col-span-2 ${
+          className={`block sm:col-span-3 ${
             touchedMissing.id_document ? "shake" : ""
           }`}
         >
@@ -1918,7 +1943,7 @@ function EditProfile() {
           />
         </label>
 
-        <div className="sm:col-span-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
+        <div className="sm:col-span-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2">
           <button
             type="reset"
             onClick={reset}
