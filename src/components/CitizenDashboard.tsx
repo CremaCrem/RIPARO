@@ -644,7 +644,7 @@ export default function CitizenDashboard({
             setDetailsReport(null);
             setShowFeedbackForm(false);
           }}
-          size="4xl"
+          size="2xl"
           actions={
             <div className="flex gap-2">
               <button
@@ -660,11 +660,11 @@ export default function CitizenDashboard({
             </div>
           }
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Left Column - Report Details */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Header Card */}
-              <div className="relative rounded-xl bg-gradient-to-br from-[#0038A8]/5 via-[#FCD116]/5 to-white border border-slate-200 p-6">
+              <div className="relative rounded-xl bg-gradient-to-br from-[#0038A8]/5 via-[#FCD116]/5 to-white border border-slate-200 p-4">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-xl" />
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
@@ -722,19 +722,19 @@ export default function CitizenDashboard({
               </div>
 
               {/* Description Card */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
                   <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
                   Description
                 </h4>
-                <div className="text-slate-800 leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
                   {detailsReport.description}
                 </div>
               </div>
 
               {/* Progress Timeline */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
+                <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full" />
                   Progress Timeline
                 </h4>
@@ -756,14 +756,14 @@ export default function CitizenDashboard({
             </div>
 
             {/* Right Column - Images & Feedback */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Images Section */}
               {(Array.isArray(detailsReport.photos) &&
                 detailsReport.photos.length > 0) ||
               (Array.isArray((detailsReport as any).resolution_photos) &&
                 (detailsReport as any).resolution_photos.length > 0) ? (
-                <div className="bg-white rounded-xl border border-slate-200 p-6">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                <div className="bg-white rounded-xl border border-slate-200 p-4">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full" />
                     Visual Evidence
                   </h4>
@@ -819,10 +819,10 @@ export default function CitizenDashboard({
                   </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 rounded-xl border border-slate-200 p-6 text-center">
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 text-center">
                   <div className="text-slate-400 mb-2">
                     <svg
-                      className="w-12 h-12 mx-auto"
+                      className="w-10 h-10 mx-auto"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -835,29 +835,29 @@ export default function CitizenDashboard({
                       />
                     </svg>
                   </div>
-                  <p className="text-sm text-slate-500">No images available</p>
+                  <p className="text-xs text-slate-500">No images available</p>
                 </div>
               )}
 
               {/* Feedback Section */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6">
-                <h4 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-xl border border-slate-200 p-4">
+                <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
                   <div className="w-2 h-2 bg-purple-500 rounded-full" />
                   Feedback
                 </h4>
                 {!showFeedbackForm ? (
-                  <div className="text-center py-4">
-                    <div className="text-slate-400 mb-3">
-                      <ChatBubbleLeftRightIcon className="w-8 h-8 mx-auto" />
+                  <div className="text-center py-3">
+                    <div className="text-slate-400 mb-2">
+                      <ChatBubbleLeftRightIcon className="w-6 h-6 mx-auto" />
                     </div>
-                    <p className="text-sm text-slate-600 mb-4">
+                    <p className="text-xs text-slate-600 mb-3">
                       Have feedback about this report?
                     </p>
                     <button
                       onClick={() => setShowFeedbackForm(true)}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#0038A8] to-[#2563eb] hover:from-[#0038A8]/90 hover:to-[#2563eb]/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-[#0038A8] to-[#2563eb] hover:from-[#0038A8]/90 hover:to-[#2563eb]/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                     >
-                      <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                      <ChatBubbleLeftRightIcon className="h-3 w-3" />
                       Send Feedback
                     </button>
                   </div>
@@ -2070,9 +2070,9 @@ function StatusPill({
       ? "Disapprove"
       : status.charAt(0).toUpperCase() + status.slice(1);
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
+    <span className="inline-flex items-center gap-2">
       <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
-      <span className="text-[12px] text-slate-700">{text}</span>
+      <span className="text-xs text-slate-700 font-medium">{text}</span>
     </span>
   );
 }
