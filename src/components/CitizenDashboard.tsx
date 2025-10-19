@@ -648,13 +648,14 @@ export default function CitizenDashboard({
           actions={
             <div className="flex gap-2">
               <button
-                className="rounded-md bg-slate-200 px-3 py-2 text-slate-800"
+                className="inline-flex items-center gap-2 rounded-md bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-4 py-2 text-sm font-medium text-white hover:from-[#1e40af] hover:to-[#1e3a8a] transition-all duration-200 shadow-sm hover:shadow-md"
                 onClick={() => {
                   setDetailsReport(null);
                   setShowFeedbackForm(false);
                 }}
               >
-                Close
+                <ChevronLeftIcon className="h-4 w-4" />
+                Back to Reports
               </button>
             </div>
           }
@@ -1151,7 +1152,12 @@ function SubmitReport({
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight">Submit Report</h1>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-r from-[#0038A8] to-[#1e40af] rounded-lg">
+          <DocumentPlusIcon className="h-5 w-5 text-white" />
+        </div>
+        <h1 className="text-xl font-bold tracking-tight">Submit Report</h1>
+      </div>
 
       {success && (
         <div className="mt-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
@@ -1507,7 +1513,12 @@ function TrackFeedback({
   };
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight">Track My Feedback</h1>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-r from-[#0038A8] to-[#1e40af] rounded-lg">
+          <ClipboardDocumentCheckIcon className="h-5 w-5 text-white" />
+        </div>
+        <h1 className="text-xl font-bold tracking-tight">Track My Feedback</h1>
+      </div>
       <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         {loading && <div className="text-sm text-slate-600">Loading...</div>}
         {error && (
@@ -1837,7 +1848,12 @@ function EditProfile({ userData }: { userData?: any }) {
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight">Edit Profile</h1>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-r from-[#0038A8] to-[#1e40af] rounded-lg">
+          <UserCircleIcon className="h-5 w-5 text-white" />
+        </div>
+        <h1 className="text-xl font-bold tracking-tight">Edit Profile</h1>
+      </div>
 
       {success && <div className="mt-3 notice notice-success">{success}</div>}
       {error && <div className="mt-3 notice notice-error">{error}</div>}
@@ -1994,7 +2010,12 @@ function EditProfile({ userData }: { userData?: any }) {
 function HelpContent() {
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight">Help & Support</h1>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-gradient-to-r from-[#0038A8] to-[#1e40af] rounded-lg">
+          <QuestionMarkCircleIcon className="h-5 w-5 text-white" />
+        </div>
+        <h1 className="text-xl font-bold tracking-tight">Help & Support</h1>
+      </div>
       <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <section>
           <h2 className="text-sm font-semibold text-slate-700">

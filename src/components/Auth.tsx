@@ -303,14 +303,14 @@ export default function Auth({
       <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#0038A8] via-[#FCD116] to-[#CE1126]" />
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#CE1126] via-[#FCD116] to-[#0038A8]" />
 
-      <header className="sticky top-0 z-50 md:static px-6 md:px-8 lg:px-12 py-4 md:py-4 lg:py-6 bg-white/95 backdrop-blur-sm border-b border-slate-200/50 w-full">
+      <header className="sticky top-0 z-50 md:static px-4 md:px-6 lg:px-8 py-2 md:py-3 bg-white/95 backdrop-blur-sm border-b border-slate-200/50 w-full">
         <div className="w-full flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
               <img
                 src={RIPARO_Logo}
                 alt="RIPARO Logo"
-                className="h-16 w-16 md:h-20 md:w-20 object-contain"
+                className="h-12 w-12 md:h-14 md:w-14 object-contain"
                 onError={(e) => {
                   // Fallback to text logo if image fails to load
                   const target = e.currentTarget as HTMLImageElement;
@@ -320,20 +320,20 @@ export default function Auth({
                 }}
               />
               <div
-                className="h-16 w-16 md:h-20 md:w-20 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg"
+                className="h-12 w-12 md:h-14 md:w-14 rounded-lg bg-gradient-to-br from-[#0038A8] to-[#1e40af] flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg"
                 style={{ display: "none" }}
               >
                 R
               </div>
             </div>
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-none">
+              <h1 className="text-lg md:text-xl font-bold text-slate-800 leading-none">
                 RIPARO
               </h1>
-              <p className="text-xs md:text-sm text-slate-600 leading-none mt-1 font-medium">
+              <p className="text-xs text-slate-600 leading-none mt-0.5 font-medium">
                 Report • Process • Resolve
               </p>
-              <p className="text-xs text-slate-500 leading-none mt-0.5">
+              <p className="hidden md:block text-[10px] text-slate-500 leading-none mt-0.5">
                 Barangay San Jose, Camarines Sur
               </p>
             </div>
@@ -476,20 +476,20 @@ export default function Auth({
       )}
 
       {/* Role banner */}
-      <div className="px-6 md:px-8 lg:px-12 py-3 md:py-3 lg:py-4">
+      <div className="px-4 md:px-6 lg:px-8 py-2 md:py-2.5">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-4 md:px-5 lg:px-6 py-3 md:py-3 lg:py-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border border-white/20 overflow-hidden">
+            <div className="bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-4 md:px-5 py-2 md:py-2.5">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10 rounded-lg bg-white/20 flex items-center justify-center">
-                    <span className="text-lg md:text-xl">{theme.icon}</span>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-white/20 flex items-center justify-center">
+                    <span className="text-base md:text-lg">{theme.icon}</span>
                   </div>
                   <div>
-                    <h2 className="text-base md:text-lg font-bold text-white">
+                    <h2 className="text-sm md:text-base font-bold text-white">
                       {theme.label}
                     </h2>
-                    <p className="text-xs md:text-sm text-white/80">
+                    <p className="text-[10px] md:text-xs text-white/80">
                       {theme.description}
                     </p>
                   </div>
@@ -500,20 +500,20 @@ export default function Auth({
         </div>
       </div>
 
-      <main className="px-6 md:px-8 lg:px-12 py-4 md:py-5 lg:py-6 flex-1 md:overflow-y-auto">
+      <main className="px-4 md:px-6 lg:px-8 py-3 md:py-4 flex-1 md:overflow-y-auto">
         <div className="max-w-7xl mx-auto h-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12 items-center h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center h-full">
             {mode !== "signup" && (
               <section className="hidden lg:flex flex-col justify-center">
-                <div className="space-y-4 md:space-y-5 lg:space-y-6">
-                  <div className="space-y-3 md:space-y-4">
-                    <h1 className="text-3xl md:text-4xl xl:text-5xl font-bold text-white leading-tight">
+                <div className="space-y-3 md:space-y-4">
+                  <div className="space-y-2 md:space-y-3">
+                    <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-white leading-tight">
                       Digital Governance for
                       <span className="block text-[#FCD116]">
                         Barangay San Jose
                       </span>
                     </h1>
-                    <p className="text-base md:text-lg text-white/90 leading-relaxed">
+                    <p className="text-sm md:text-base text-white/90 leading-relaxed">
                       A modern reporting system connecting citizens with local
                       government in Camarines Sur. Submit, track, and resolve
                       community concerns efficiently.
@@ -525,57 +525,110 @@ export default function Auth({
 
             <section className={`${mode === "signup" ? "lg:col-span-2" : ""}`}>
               <div className="w-full max-w-md mx-auto lg:max-w-none">
-                <div className="bg-white rounded-xl md:rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden">
-                  <div className="px-6 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6 border-b border-slate-100">
+                <div className="bg-white rounded-xl shadow-xl border border-slate-200/50 overflow-hidden">
+                  <div className="px-5 md:px-6 py-3 md:py-4 border-b border-slate-100">
                     <div>
-                      <h2 className="text-xl md:text-2xl font-bold text-slate-800">
+                      <h2 className="text-lg md:text-xl font-bold text-slate-800">
                         {title}
                       </h2>
-                      <p className="text-sm md:text-base text-slate-600 mt-1">
+                      <p className="text-xs md:text-sm text-slate-600 mt-0.5">
                         {subtitle}
                       </p>
                     </div>
+
+                    {/* Login/Signup Toggle - Only show for citizen portal */}
+                    {allowSignup && (
+                      <div className="mt-3 md:mt-4">
+                        <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                          <button
+                            type="button"
+                            onClick={() => setMode("login")}
+                            className={`flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                              mode === "login"
+                                ? "bg-gradient-to-r from-[#0038A8] to-[#1e40af] text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                                />
+                              </svg>
+                              Sign In
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMode("signup")}
+                            className={`flex-1 px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+                              mode === "signup"
+                                ? "bg-gradient-to-r from-[#0038A8] to-[#1e40af] text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center justify-center gap-2">
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                                />
+                              </svg>
+                              Create Account
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Helper text */}
                   {allowSignup && mode === "signup" && (
-                    <div className="px-8 py-4 bg-amber-50 border-l-4 border-amber-400">
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0">
-                          <svg
-                            className="h-5 w-5 text-amber-400"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M8.257 3.099c.765-1.36 2.725-1.36 3.49 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-amber-700">
-                            <strong>Registration Requirements:</strong> Complete
-                            all fields marked with{" "}
-                            <span className="text-red-500 font-semibold">
-                              *
-                            </span>
-                            . A valid government-issued ID upload is required
-                            for verification.
-                          </p>
-                        </div>
+                    <div className="px-5 md:px-6 py-2.5 bg-amber-50 border-l-4 border-amber-400">
+                      <div className="flex items-start gap-2">
+                        <svg
+                          className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.725-1.36 3.49 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <p className="text-xs text-amber-700">
+                          <strong>Note:</strong> Complete all fields marked with{" "}
+                          <span className="text-red-500 font-semibold">*</span>.
+                          A valid government-issued ID is required for
+                          verification.
+                        </p>
                       </div>
                     </div>
                   )}
 
                   <form
-                    className="px-6 md:px-7 lg:px-8 py-4 md:py-5 lg:py-6 space-y-4 md:space-y-5 lg:space-y-6"
+                    className="px-5 md:px-6 py-3 md:py-4 space-y-3"
                     onSubmit={handleSubmit}
                   >
                     {allowSignup && mode === "signup" && (
                       <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-slate-700">
                               First name <span className="text-red-500">*</span>
@@ -590,7 +643,7 @@ export default function Auth({
                                   first_name: e.target.value,
                                 })
                               }
-                              className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
                                 errors.first_name
                                   ? "border-red-400 bg-red-50 focus:border-red-400"
                                   : "border-slate-300 bg-white focus:border-[#0038A8]"
@@ -628,7 +681,7 @@ export default function Auth({
                                   middle_name: e.target.value,
                                 })
                               }
-                              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8]"
+                              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8]"
                             />
                           </div>
                           <div className="space-y-2">
@@ -645,7 +698,7 @@ export default function Auth({
                                   last_name: e.target.value,
                                 })
                               }
-                              className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
                                 errors.last_name
                                   ? "border-red-400 bg-red-50 focus:border-red-400"
                                   : "border-slate-300 bg-white focus:border-[#0038A8]"
@@ -670,7 +723,7 @@ export default function Auth({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <Input
                             label="Email address"
                             type="email"
@@ -701,7 +754,7 @@ export default function Auth({
                           />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <Input
                             label="Barangay"
                             type="text"
@@ -729,13 +782,13 @@ export default function Auth({
                           />
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                           <div className="space-y-2">
                             <label className="block text-sm font-medium text-slate-700">
                               Government-issued ID{" "}
                               <span className="text-red-500">*</span>
                             </label>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -747,7 +800,7 @@ export default function Auth({
                                     f ? URL.createObjectURL(f) : null
                                   );
                                 }}
-                                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-800 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8] file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#0038A8]/10 file:text-[#0038A8] hover:file:bg-[#0038A8]/20"
+                                className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 focus:border-[#0038A8] file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-[#0038A8]/10 file:text-[#0038A8] hover:file:bg-[#0038A8]/20"
                               />
                               {idDoc && (
                                 <button
@@ -758,7 +811,7 @@ export default function Auth({
                                     setIdDoc(null);
                                     setIdPreview(null);
                                   }}
-                                  className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
+                                  className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 border border-red-200 hover:bg-red-100 transition-colors"
                                 >
                                   Remove
                                 </button>
@@ -782,14 +835,14 @@ export default function Auth({
                             )}
                           </div>
                           {idPreview && (
-                            <div className="mt-4">
-                              <p className="text-sm font-medium text-slate-700 mb-2">
+                            <div className="mt-2">
+                              <p className="text-xs font-medium text-slate-700 mb-1.5">
                                 ID Preview:
                               </p>
                               <img
                                 src={idPreview}
                                 alt="ID preview"
-                                className="h-32 w-auto rounded-lg border border-slate-200 object-cover shadow-sm"
+                                className="h-24 w-auto rounded-lg border border-slate-200 object-cover shadow-sm"
                               />
                             </div>
                           )}
@@ -817,7 +870,7 @@ export default function Auth({
                       </label>
                       <div className="relative">
                         <input
-                          className={`w-full rounded-lg border px-4 py-3 pr-12 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                          className={`w-full rounded-lg border px-3 py-2 pr-10 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
                             errors.password
                               ? "border-red-400 bg-red-50 focus:border-red-400"
                               : "border-slate-300 bg-white focus:border-[#0038A8]"
@@ -946,7 +999,7 @@ export default function Auth({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full group inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-6 py-4 font-semibold text-white transition-all duration-200 hover:from-[#1e40af] hover:to-[#1e3a8a] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                      className="w-full group inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#0038A8] to-[#1e40af] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:from-[#1e40af] hover:to-[#1e3a8a] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                     >
                       {loading ? (
                         <>
@@ -990,32 +1043,6 @@ export default function Auth({
                         </>
                       )}
                     </button>
-
-                    {allowSignup && (
-                      <div className="pt-4 text-center text-sm text-slate-600 border-t border-slate-100">
-                        {mode === "login" ? (
-                          <>
-                            Don't have an account?{" "}
-                            <button
-                              onClick={() => setMode("signup")}
-                              className="text-[#0038A8] hover:text-[#1e40af] font-medium transition-colors"
-                            >
-                              Create one here
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            Already have an account?{" "}
-                            <button
-                              onClick={() => setMode("login")}
-                              className="text-[#0038A8] hover:text-[#1e40af] font-medium transition-colors"
-                            >
-                              Sign in instead
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
                   </form>
                 </div>
               </div>
@@ -1024,20 +1051,20 @@ export default function Auth({
         </div>
       </main>
 
-      <footer className="px-6 md:px-8 lg:px-12 py-3 md:py-3 lg:py-4 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 md:mt-auto w-full">
+      <footer className="px-4 md:px-6 lg:px-8 py-2 md:py-2.5 bg-white/95 backdrop-blur-sm border-t border-slate-200/50 md:mt-auto w-full">
         <div className="w-full">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-2">
             <div className="text-center md:text-left">
-              <p className="text-sm text-slate-800 font-medium">
+              <p className="text-xs text-slate-800 font-medium">
                 © {new Date().getFullYear()} RIPARO
               </p>
-              <p className="text-xs text-slate-600 mt-1">
+              <p className="text-[10px] text-slate-600 mt-0.5">
                 Digital governance platform for Barangay San Jose, Camarines Sur
               </p>
             </div>
-            <div className="flex items-center gap-6 text-xs text-slate-600">
+            <div className="flex items-center gap-4 text-[10px] text-slate-600">
               <span>Report • Process • Resolve</span>
-              <div className="h-4 w-px bg-slate-300" />
+              <div className="h-3 w-px bg-slate-300" />
               <span>Philippines</span>
             </div>
           </div>
@@ -1067,7 +1094,7 @@ function Input(props: {
         placeholder={props.placeholder}
         value={props.value}
         onChange={props.onChange}
-        className={`w-full rounded-lg border px-4 py-3 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+        className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
           props.error
             ? "border-red-400 bg-red-50 focus:border-red-400"
             : "border-slate-300 bg-white focus:border-[#0038A8]"
