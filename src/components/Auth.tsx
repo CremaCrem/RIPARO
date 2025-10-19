@@ -97,7 +97,7 @@ export default function Auth({
 
   const title = useMemo(() => {
     if (mode === "signup") return "Create your account";
-    if (role === "mayor") return "Mayor Login";
+    if (role === "mayor") return "Mayor's Login";
     if (role === "admin") return "Admin Login";
     return "Welcome back";
   }, [mode, role]);
