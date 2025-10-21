@@ -1183,8 +1183,10 @@ function SubmitReport({
           </div>
           <div className="flex items-center gap-3">
             <span
-              className={`text-sm font-medium ${
-                !isSelfReport ? "text-slate-600" : "text-[#0038A8]"
+              className={`text-sm font-medium transition-colors duration-200 ${
+                !isSelfReport
+                  ? "text-[#0038A8] font-semibold"
+                  : "text-slate-400"
               }`}
             >
               On behalf of someone
@@ -1192,19 +1194,19 @@ function SubmitReport({
             <button
               type="button"
               onClick={() => setIsSelfReport(!isSelfReport)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 ${
                 isSelfReport ? "bg-[#0038A8]" : "bg-slate-300"
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm ${
                   isSelfReport ? "translate-x-6" : "translate-x-1"
                 }`}
               />
             </button>
             <span
-              className={`text-sm font-medium ${
-                isSelfReport ? "text-[#0038A8]" : "text-slate-600"
+              className={`text-sm font-medium transition-colors duration-200 ${
+                isSelfReport ? "text-[#0038A8] font-semibold" : "text-slate-400"
               }`}
             >
               Self report

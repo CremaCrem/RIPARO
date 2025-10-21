@@ -994,23 +994,10 @@ export default function Auth({
                           </svg>
                           Processing...
                         </>
+                      ) : mode === "login" ? (
+                        "Sign In"
                       ) : (
-                        <>
-                          {mode === "login" ? "Sign In" : "Create Account"}
-                          <svg
-                            className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13 7l5 5m0 0l-5 5m5-5H6"
-                            />
-                          </svg>
-                        </>
+                        "Create Account"
                       )}
                     </button>
                   </form>
