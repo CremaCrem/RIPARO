@@ -262,9 +262,9 @@ export default function MayorDashboard({
       {
         label: "In Progress",
         value: reportsPending,
-        color: "bg-gradient-to-r from-amber-400 to-amber-500",
-        bgColor: "bg-amber-50",
-        borderColor: "border-amber-200",
+        color: "bg-gradient-to-r from-pink-400 to-pink-500",
+        bgColor: "bg-pink-50",
+        borderColor: "border-pink-200",
         icon: ClockIcon,
       },
       {
