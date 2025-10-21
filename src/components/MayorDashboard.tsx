@@ -682,8 +682,8 @@ export default function MayorDashboard({
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
 
           {/* Logo Section */}
-          <div className="relative px-3 py-4 border-b border-white/10">
-            <div className="flex items-center justify-center">
+          <div className="relative px-2 py-4 border-b border-white/10">
+            <div className="flex items-center">
               {collapsed ? (
                 <img
                   src={RIPARO_Logo}
@@ -865,13 +865,13 @@ export default function MayorDashboard({
                     </div>
                   );
                 })}
-                <div className="group relative rounded-xl border border-blue-200 bg-blue-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative rounded-xl border border-cyan-200 bg-cyan-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <div className="relative flex items-center justify-between">
                     <div className="text-xs sm:text-sm font-semibold text-slate-700">
                       Total Feedback
                     </div>
-                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 shadow-sm">
                       <InboxIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
@@ -893,13 +893,13 @@ export default function MayorDashboard({
                     {statsLoading ? "…" : animatedPendingUsers.toLocaleString()}
                   </div>
                 </div>
-                <div className="group relative rounded-xl border border-purple-200 bg-purple-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
+                <div className="group relative rounded-xl border border-indigo-200 bg-indigo-50 p-3 sm:p-4 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <div className="relative flex items-center justify-between">
                     <div className="text-xs sm:text-sm font-semibold text-slate-700">
                       Update Requests Pending
                     </div>
-                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 shadow-sm">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 shadow-sm">
                       <ClipboardDocumentListIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>

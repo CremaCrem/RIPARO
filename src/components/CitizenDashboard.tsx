@@ -317,8 +317,8 @@ export default function CitizenDashboard({
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
 
           {/* Logo Section */}
-          <div className="relative px-3 py-4 border-b border-white/10">
-            <div className="flex items-center justify-center">
+          <div className="relative px-2 py-4 border-b border-white/10">
+            <div className="flex items-center">
               {collapsed ? (
                 <img
                   src={RIPARO_Logo}
