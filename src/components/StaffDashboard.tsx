@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
 import {
@@ -1896,6 +1896,12 @@ function ReportDetailsModal({
   const [uploading, setUploading] = useState(false);
   const [localReport, setLocalReport] = useState(report);
 
+  // Track original state to detect changes
+  const originalProgress = useRef<ReportProgress>(report.progress);
+
+  // Track if any changes have been made
+  const hasChanges = progress !== originalProgress.current;
+
   // Auto-hide notifications
   useEffect(() => {
     if (success) {
@@ -1931,6 +1937,9 @@ function ReportDetailsModal({
       setSuccess("✅ Report status updated successfully!");
       setLocalReport((prev) => ({ ...prev, progress }));
       onProgressChanged(progress);
+      // Reset the original progress to match the new progress
+      // This will make hasChanges return false until the next change
+      originalProgress.current = progress;
     } catch (e: any) {
       setError(e?.message || "Failed to update report status");
     } finally {
@@ -1999,7 +2008,7 @@ function ReportDetailsModal({
           <button
             className="rounded-md px-3 py-2 bg-[#1e3a8a] text-white disabled:opacity-50"
             onClick={save}
-            disabled={saving}
+            disabled={saving || !hasChanges}
           >
             {saving ? "Saving..." : "Save"}
           </button>

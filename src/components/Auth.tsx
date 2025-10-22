@@ -334,7 +334,7 @@ export default function Auth({
                 Report • Process • Resolve
               </p>
               <p className="hidden md:block text-[10px] text-slate-500 leading-none mt-0.5">
-                Barangay San Jose, Camarines Sur
+                Municipality of San Jose, Camarines Sur
               </p>
             </div>
           </div>

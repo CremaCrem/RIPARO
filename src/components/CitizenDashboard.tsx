@@ -1586,7 +1586,7 @@ function TrackFeedback({
                 {/* Date From */}
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Date From
+                    From
                   </label>
                   <input
                     type="date"
@@ -1601,7 +1601,7 @@ function TrackFeedback({
                 {/* Date To */}
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Date To
+                    To
                   </label>
                   <input
                     type="date"
@@ -1616,7 +1616,7 @@ function TrackFeedback({
                 {/* Category */}
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Category
+                    Categories
                   </label>
                   <select
                     value={filters.category}
