@@ -417,9 +417,30 @@ export default function CitizenDashboard({
           {notice && (
             <div className="mb-4 relative rounded-xl border border-emerald-300 bg-emerald-50/90 backdrop-blur-md px-4 py-3 shadow-lg animate-in slide-in-from-top-2 duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent rounded-xl" />
-              <div className="relative flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-emerald-700 font-medium">{notice}</span>
+              <div className="relative flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <span className="text-emerald-700 font-medium">{notice}</span>
+                </div>
+                <button
+                  onClick={() => setNotice(null)}
+                  className="text-emerald-600 hover:text-emerald-800 transition-colors p-1 rounded-full hover:bg-emerald-100"
+                  aria-label="Close notification"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           )}
@@ -595,7 +616,10 @@ export default function CitizenDashboard({
           {active === "profile" && (
             <section className="animate-in fade-in duration-500 slide-in-from-bottom-4">
               <Panel description="Update your information and submit for verification.">
-                <EditProfile userData={_userData} />
+                <EditProfile
+                  userData={_userData}
+                  onNotice={(msg) => setNotice(msg)}
+                />
               </Panel>
             </section>
           )}
@@ -1710,7 +1734,13 @@ function TrackFeedback({
   );
 }
 
-function EditProfile({ userData }: { userData?: any }) {
+function EditProfile({
+  userData,
+  onNotice,
+}: {
+  userData?: any;
+  onNotice?: (msg: string) => void;
+}) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -1838,7 +1868,10 @@ function EditProfile({ userData }: { userData?: any }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Submission failed");
 
-      setSuccess("✅ Update request submitted. Please wait for verification.");
+      const successMsg =
+        "✅ Update request submitted. Please wait for verification.";
+      setSuccess(successMsg);
+      onNotice?.(successMsg);
       reset();
     } catch (e: any) {
       setError(e?.message || "Submission failed");
