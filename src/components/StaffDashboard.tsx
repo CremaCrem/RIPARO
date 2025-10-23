@@ -930,81 +930,108 @@ export default function StaffDashboard({
                     Citizen Feedback
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full md:w-auto">
-                    <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={reportFilters.status}
-                      onChange={(e) => {
-                        setReportPage(1);
-                        setReportFilters((f) => ({
-                          ...f,
-                          status: e.target.value as any,
-                        }));
-                      }}
-                    >
-                      <option value="">All Status</option>
-                      <option value="pending">Pending</option>
-                      <option value="in_review">In review</option>
-                      <option value="assigned">Assigned</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="rejected">Disapprove</option>
-                    </select>
-                    <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={reportFilters.type}
-                      onChange={(e) => {
-                        setReportPage(1);
-                        setReportFilters((f) => ({
-                          ...f,
-                          type: e.target.value as any,
-                        }));
-                      }}
-                    >
-                      <option value="">All Categories</option>
-                      <option value="infrastructure">Infrastructure</option>
-                      <option value="sanitation">Sanitation</option>
-                      <option value="community_welfare">
-                        Community welfare
-                      </option>
-                      <option value="behavoural_concerns">
-                        Behavoural concerns
-                      </option>
-                    </select>
-                    <input
-                      type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={reportFilters.date_from}
-                      onChange={(e) => {
-                        setReportPage(1);
-                        setReportFilters((f) => ({
-                          ...f,
-                          date_from: e.target.value,
-                        }));
-                      }}
-                    />
-                    <input
-                      type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={reportFilters.date_to}
-                      onChange={(e) => {
-                        setReportPage(1);
-                        setReportFilters((f) => ({
-                          ...f,
-                          date_to: e.target.value,
-                        }));
-                      }}
-                    />
-                    <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={reportPerPage}
-                      onChange={(e) => {
-                        setReportPage(1);
-                        setReportPerPage(parseInt(e.target.value || "10", 10));
-                      }}
-                    >
-                      <option value="10">10 / page</option>
-                      <option value="20">20 / page</option>
-                      <option value="50">50 / page</option>
-                    </select>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        Status
+                      </label>
+                      <select
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={reportFilters.status}
+                        onChange={(e) => {
+                          setReportPage(1);
+                          setReportFilters((f) => ({
+                            ...f,
+                            status: e.target.value as any,
+                          }));
+                        }}
+                      >
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="in_review">In review</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="rejected">Disapprove</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        Categories
+                      </label>
+                      <select
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={reportFilters.type}
+                        onChange={(e) => {
+                          setReportPage(1);
+                          setReportFilters((f) => ({
+                            ...f,
+                            type: e.target.value as any,
+                          }));
+                        }}
+                      >
+                        <option value="">All Categories</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="sanitation">Sanitation</option>
+                        <option value="community_welfare">
+                          Community welfare
+                        </option>
+                        <option value="behavoural_concerns">
+                          Behavoural concerns
+                        </option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        From
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={reportFilters.date_from}
+                        onChange={(e) => {
+                          setReportPage(1);
+                          setReportFilters((f) => ({
+                            ...f,
+                            date_from: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        To
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={reportFilters.date_to}
+                        onChange={(e) => {
+                          setReportPage(1);
+                          setReportFilters((f) => ({
+                            ...f,
+                            date_to: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        Page
+                      </label>
+                      <select
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={reportPerPage}
+                        onChange={(e) => {
+                          setReportPage(1);
+                          setReportPerPage(
+                            parseInt(e.target.value || "10", 10)
+                          );
+                        }}
+                      >
+                        <option value="10">10 / page</option>
+                        <option value="20">20 / page</option>
+                        <option value="50">50 / page</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -1093,44 +1120,59 @@ export default function StaffDashboard({
                     {/* placeholders to align with Reports tab columns 1 and 2 */}
                     <div className="hidden md:block" />
                     <div className="hidden md:block" />
-                    <input
-                      type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={feedbackFilters.date_from}
-                      onChange={(e) => {
-                        setFeedbackPage(1);
-                        setFeedbackFilters((f) => ({
-                          ...f,
-                          date_from: e.target.value,
-                        }));
-                      }}
-                    />
-                    <input
-                      type="date"
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={feedbackFilters.date_to}
-                      onChange={(e) => {
-                        setFeedbackPage(1);
-                        setFeedbackFilters((f) => ({
-                          ...f,
-                          date_to: e.target.value,
-                        }));
-                      }}
-                    />
-                    <select
-                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
-                      value={feedbackPerPage}
-                      onChange={(e) => {
-                        setFeedbackPage(1);
-                        setFeedbackPerPage(
-                          parseInt(e.target.value || "10", 10)
-                        );
-                      }}
-                    >
-                      <option value="10">10 / page</option>
-                      <option value="20">20 / page</option>
-                      <option value="50">50 / page</option>
-                    </select>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        From
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={feedbackFilters.date_from}
+                        onChange={(e) => {
+                          setFeedbackPage(1);
+                          setFeedbackFilters((f) => ({
+                            ...f,
+                            date_from: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        To
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={feedbackFilters.date_to}
+                        onChange={(e) => {
+                          setFeedbackPage(1);
+                          setFeedbackFilters((f) => ({
+                            ...f,
+                            date_to: e.target.value,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                        Page
+                      </label>
+                      <select
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                        value={feedbackPerPage}
+                        onChange={(e) => {
+                          setFeedbackPage(1);
+                          setFeedbackPerPage(
+                            parseInt(e.target.value || "10", 10)
+                          );
+                        }}
+                      >
+                        <option value="10">10 / page</option>
+                        <option value="20">20 / page</option>
+                        <option value="50">50 / page</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
