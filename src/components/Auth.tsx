@@ -510,7 +510,7 @@ export default function Auth({
                     <h1 className="text-2xl md:text-3xl xl:text-4xl font-bold text-white leading-tight">
                       Digital Governance for
                       <span className="block text-[#FCD116]">
-                        Barangay San Jose
+                        Municipality of San Jose
                       </span>
                     </h1>
                     <p className="text-sm md:text-base text-white/90 leading-relaxed">
