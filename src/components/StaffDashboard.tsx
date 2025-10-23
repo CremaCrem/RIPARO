@@ -931,7 +931,7 @@ export default function StaffDashboard({
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full md:w-auto">
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         Status
                       </label>
                       <select
@@ -954,7 +954,7 @@ export default function StaffDashboard({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         Categories
                       </label>
                       <select
@@ -980,7 +980,7 @@ export default function StaffDashboard({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         From
                       </label>
                       <input
@@ -997,7 +997,7 @@ export default function StaffDashboard({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         To
                       </label>
                       <input
@@ -1014,7 +1014,7 @@ export default function StaffDashboard({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         Page
                       </label>
                       <select
@@ -1121,7 +1121,7 @@ export default function StaffDashboard({
                     <div className="hidden md:block" />
                     <div className="hidden md:block" />
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         From
                       </label>
                       <input
@@ -1138,7 +1138,7 @@ export default function StaffDashboard({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         To
                       </label>
                       <input
@@ -1155,7 +1155,7 @@ export default function StaffDashboard({
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-700 mb-1">
+                      <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         Page
                       </label>
                       <select

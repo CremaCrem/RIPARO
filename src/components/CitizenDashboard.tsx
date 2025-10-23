@@ -1580,7 +1580,7 @@ function TrackFeedback({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Date From */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                     From
                   </label>
                   <input
@@ -1595,7 +1595,7 @@ function TrackFeedback({
 
                 {/* Date To */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                     To
                   </label>
                   <input
@@ -1610,7 +1610,7 @@ function TrackFeedback({
 
                 {/* Category */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                     Categories
                   </label>
                   <select
@@ -1632,7 +1632,7 @@ function TrackFeedback({
 
                 {/* Status */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                  <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                     Status
                   </label>
                   <select
