@@ -1054,10 +1054,7 @@ function SubmitReport({
         submitter_name: `${userData.first_name || ""} ${
           userData.middle_name || ""
         } ${userData.last_name || ""}`.trim(),
-        address: `${userData.barangay || ""}, ${userData.zone || ""}`.replace(
-          /^,\s*|,\s*$/g,
-          ""
-        ),
+        address: "",
       }));
     } else {
       setForm((prev) => ({
@@ -1313,18 +1310,16 @@ function SubmitReport({
           }`}
         >
           <span className="mb-1 block text-sm text-slate-700 required-asterisk">
-            {isSelfReport ? "Your address" : "Address"}
+            Address of the Location
           </span>
           <input
             name="address"
             value={form.address}
             onChange={handleChange}
-            disabled={isSelfReport}
+            placeholder="Enter the address where the issue is located"
             className={`w-full rounded-lg border ${
               touchedMissing.address
                 ? "border-red-400 bg-red-50"
-                : isSelfReport
-                ? "border-slate-300 bg-slate-50"
                 : "border-slate-300 bg-white"
             } px-3 py-2 text-slate-800 outline-none ring-0 focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200`}
           />
