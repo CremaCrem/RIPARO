@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import Modal from "./Modal";
 import ReportCard from "./ReportCard";
-import { API_URL } from "../config";
+import { API_URL, resolveAssetUrl } from "../config";
 import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
 import { Bar } from "react-chartjs-2";
 import {
@@ -69,6 +69,16 @@ type ReportRow = {
   photos?: string[] | null;
   resolution_photos?: string[] | null;
   address?: string;
+};
+
+type ReportDetail = ReportRow & {
+  submitter_name: string;
+  age: number;
+  gender: string;
+  address: string;
+  photos?: string[] | null;
+  description: string;
+  date_generated?: string | null;
 };
 
 type FeedbackRow = {
@@ -193,7 +203,7 @@ export default function MayorDashboard({
     date_from: string;
     date_to: string;
   }>({ status: "", type: "", date_from: "", date_to: "" });
-  // removed unused detailReport state
+  const [detailReport, setDetailReport] = useState<ReportDetail | null>(null);
 
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
@@ -205,11 +215,15 @@ export default function MayorDashboard({
     date_from: string;
     date_to: string;
   }>({ date_from: "", date_to: "" });
-  // removed unused viewFeedback state
+  const [viewFeedback, setViewFeedback] = useState<FeedbackRow | null>(null);
 
   const [users, setUsers] = useState<UserRow[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "verified" | "rejected"
+  >("all");
+  const [viewUser, setViewUser] = useState<UserRow | null>(null);
 
   type UpdateRequestRow = {
     id: number;
@@ -239,7 +253,8 @@ export default function MayorDashboard({
   const [updates, setUpdates] = useState<UpdateRequestRow[]>([]);
   const [updatesLoading, setUpdatesLoading] = useState(false);
   const [updatesError, setUpdatesError] = useState<string | null>(null);
-  // removed unused viewUpdate state
+  const [viewUpdate, setViewUpdate] = useState<UpdateRequestRow | null>(null);
+  const [updatesNotice, setUpdatesNotice] = useState<string | null>(null);
 
   // Resolved reports state
   const [resolvedReports, setResolvedReports] = useState<ReportRow[]>([]);
@@ -473,7 +488,7 @@ export default function MayorDashboard({
     load();
   }, [tab, feedbackPage, feedbackPerPage, feedbackFilters]);
 
-  // Users list (view only)
+  // Users list
   useEffect(() => {
     if (tab !== "users") return;
     const load = async () => {
@@ -481,7 +496,8 @@ export default function MayorDashboard({
       setUsersError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(`${API_URL}/users?status=all`, {
+        const qs = filter === "all" ? "" : `?status=${filter}`;
+        const res = await fetch(`${API_URL}/users${qs}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -494,9 +510,9 @@ export default function MayorDashboard({
       }
     };
     load();
-  }, [tab]);
+  }, [tab, filter]);
 
-  // Update requests list (view only)
+  // Update requests list
   useEffect(() => {
     if (tab !== "updates") return;
     const load = async () => {
@@ -504,7 +520,7 @@ export default function MayorDashboard({
       setUpdatesError(null);
       try {
         const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(`${API_URL}/update-requests`, {
+        const res = await fetch(`${API_URL}/update-requests?status=pending`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         const data = await res.json();
@@ -519,6 +535,21 @@ export default function MayorDashboard({
     };
     load();
   }, [tab]);
+
+  const openReportDetail = async (id: number) => {
+    try {
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(`${API_URL}/reports/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load report");
+      const report: ReportDetail = data.report;
+      setDetailReport(report);
+    } catch (e) {
+      setReportsError((e as any)?.message || "Failed to load report");
+    }
+  };
 
   // Load resolved reports when tab changes
   useEffect(() => {
@@ -1052,6 +1083,7 @@ export default function MayorDashboard({
                           <th className="py-2">Date Submitted</th>
                           <th className="py-2">Category</th>
                           <th className="py-2">Status</th>
+                          <th className="py-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1068,6 +1100,14 @@ export default function MayorDashboard({
                             </td>
                             <td className="py-2">
                               <StaffStatusPill status={r.progress} />
+                            </td>
+                            <td className="py-2">
+                              <button
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
+                                onClick={() => openReportDetail(r.id)}
+                              >
+                                View
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -1197,6 +1237,14 @@ export default function MayorDashboard({
                             ? `${f.message.slice(0, 160)}…`
                             : f.message}
                         </div>
+                        <div className="pt-1">
+                          <button
+                            className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200"
+                            onClick={() => setViewFeedback(f)}
+                          >
+                            View
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1232,6 +1280,16 @@ export default function MayorDashboard({
             <section>
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-700">Users</h2>
+                <select
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value as any)}
+                >
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="verified">Verified</option>
+                  <option value="rejected">Rejected</option>
+                </select>
               </div>
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="px-5 py-3 text-sm text-slate-600 border-b border-slate-100">
@@ -1249,6 +1307,7 @@ export default function MayorDashboard({
                           Barangay/Zone
                         </th>
                         <th className="py-2">Status</th>
+                        <th className="py-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1289,6 +1348,14 @@ export default function MayorDashboard({
                               {u.verification_status}
                             </span>
                           </td>
+                          <td className="py-2">
+                            <button
+                              className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
+                              onClick={() => setViewUser(u)}
+                            >
+                              View
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1304,12 +1371,46 @@ export default function MayorDashboard({
                 <h2 className="text-sm font-semibold text-slate-700">
                   Profile Update Requests
                 </h2>
+                <button
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                  onClick={() => {
+                    // simple refresh
+                    (async () => {
+                      try {
+                        setUpdatesLoading(true);
+                        const token = localStorage.getItem("auth_token") || "";
+                        const res = await fetch(
+                          `${API_URL}/update-requests?status=pending`,
+                          {
+                            headers: token
+                              ? { Authorization: `Bearer ${token}` }
+                              : {},
+                          }
+                        );
+                        const data = await res.json();
+                        if (res.ok)
+                          setUpdates(
+                            Array.isArray(data.requests) ? data.requests : []
+                          );
+                      } finally {
+                        setUpdatesLoading(false);
+                      }
+                    })();
+                  }}
+                >
+                  Refresh
+                </button>
               </div>
+              {updatesNotice && (
+                <div className="mb-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-700">
+                  {updatesNotice}
+                </div>
+              )}
               <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="px-5 py-3 text-sm text-slate-600 border-b border-slate-100">
                   {updatesLoading
                     ? "Loading..."
-                    : updatesError || `${updates.length} request(s)`}
+                    : updatesError || `${updates.length} pending request(s)`}
                 </div>
                 <div className="px-5 pb-4 overflow-x-auto">
                   <table className="w-full text-xs sm:text-sm">
@@ -1317,23 +1418,23 @@ export default function MayorDashboard({
                       <tr>
                         <th className="py-2">Requested At</th>
                         <th className="py-2">User</th>
-                        <th className="py-2">Summary</th>
+                        <th className="py-2 hidden md:table-cell">Summary</th>
+                        <th className="py-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {updates.map((u) => {
                         const changes: string[] = [];
-                        (
-                          [
-                            "first_name",
-                            "middle_name",
-                            "last_name",
-                            "email",
-                            "mobile_number",
-                            "barangay",
-                            "zone",
-                          ] as const
-                        ).forEach((f) => {
+                        const fields: Array<keyof UpdateRequestRow> = [
+                          "first_name",
+                          "middle_name",
+                          "last_name",
+                          "email",
+                          "mobile_number",
+                          "barangay",
+                          "zone",
+                        ];
+                        fields.forEach((f) => {
                           const newVal = (u as any)[f];
                           if (newVal && String(newVal).trim() !== "")
                             changes.push(String(f).replaceAll("_", " "));
@@ -1342,27 +1443,32 @@ export default function MayorDashboard({
                         return (
                           <tr key={u.id} className="border-t border-slate-100">
                             <td className="py-2">
-                              <div className="hidden sm:block">
-                                {new Date(u.created_at).toLocaleString()}
-                              </div>
-                              <div className="sm:hidden">
-                                {new Date(u.created_at).toLocaleDateString()}
-                              </div>
+                              {new Date(u.created_at).toLocaleDateString()}
                             </td>
                             <td className="py-2">
-                              {u.user
-                                ? `${u.user.first_name} ${u.user.last_name}`
-                                : `#${u.user_id}`}
+                              <div className="font-medium">
+                                {u.user
+                                  ? `${u.user.first_name} ${u.user.last_name}`
+                                  : `#${u.user_id}`}
+                              </div>
+                              {changes.length > 0 && (
+                                <div className="text-slate-500 md:hidden text-[10px]">
+                                  {changes.slice(0, 2).join(", ")}
+                                  {changes.length > 2 &&
+                                    ` +${changes.length - 2}`}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-2 hidden md:table-cell">
+                              {changes.length ? changes.join(", ") : "-"}
                             </td>
                             <td className="py-2">
-                              <div className="hidden sm:block">
-                                {changes.length ? changes.join(", ") : "-"}
-                              </div>
-                              <div className="sm:hidden text-xs">
-                                {changes.length
-                                  ? `${changes.length} change(s)`
-                                  : "-"}
-                              </div>
+                              <button
+                                className="text-[#0038A8] underline underline-offset-4 hover:text-[#0038A8]/80 transition-colors duration-200 text-xs"
+                                onClick={() => setViewUpdate(u)}
+                              >
+                                View
+                              </button>
                             </td>
                           </tr>
                         );
@@ -1477,6 +1583,153 @@ export default function MayorDashboard({
         >
           Are you sure you want to log out?
         </Modal>
+      )}
+
+      {viewUser && (
+        <UserDetailsModal
+          user={viewUser}
+          onClose={() => setViewUser(null)}
+          onUpdated={() => {
+            setViewUser(null);
+            if (tab === "users") {
+              (async () => {
+                try {
+                  const token = localStorage.getItem("auth_token") || "";
+                  const qs = filter === "all" ? "" : `?status=${filter}`;
+                  const res = await fetch(`${API_URL}/users${qs}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  });
+                  const data = await res.json();
+                  if (res.ok)
+                    setUsers(Array.isArray(data.users) ? data.users : []);
+                } catch {}
+              })();
+            }
+          }}
+        />
+      )}
+
+      {detailReport && (
+        <ReportDetailsModal
+          report={detailReport}
+          onClose={() => setDetailReport(null)}
+          onProgressChanged={(p) => {
+            setDetailReport((r) => (r ? { ...r, progress: p } : r));
+            (async () => {
+              try {
+                const token = localStorage.getItem("auth_token") || "";
+                const params = new URLSearchParams();
+                params.set("page", String(reportPage));
+                params.set("per_page", String(reportPerPage));
+                if (reportFilters.status)
+                  params.set("status", reportFilters.status);
+                if (reportFilters.type) params.set("type", reportFilters.type);
+                if (reportFilters.date_from)
+                  params.set("date_from", reportFilters.date_from);
+                if (reportFilters.date_to)
+                  params.set("date_to", reportFilters.date_to);
+                const res = await fetch(
+                  `${API_URL}/reports?${params.toString()}`,
+                  {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                  }
+                );
+                const data = await res.json();
+                if (res.ok) {
+                  const items: ReportRow[] = Array.isArray(data.data)
+                    ? data.data
+                    : data.reports || [];
+                  setReports(items);
+                  setReportTotal(
+                    typeof data.total === "number" ? data.total : items.length
+                  );
+                }
+              } catch {}
+            })();
+          }}
+        />
+      )}
+
+      {viewFeedback && (
+        <Modal
+          title={
+            viewFeedback.subject
+              ? `Feedback: ${viewFeedback.subject}`
+              : "Feedback"
+          }
+          onClose={() => setViewFeedback(null)}
+          actions={
+            <button
+              className="rounded-md bg-slate-200 px-3 py-2"
+              onClick={() => setViewFeedback(null)}
+            >
+              Close
+            </button>
+          }
+        >
+          <div className="space-y-3 text-sm">
+            <div>
+              <div className="text-slate-600">Date Submitted</div>
+              <div className="font-medium">
+                {new Date(viewFeedback.created_at).toLocaleString()}
+              </div>
+            </div>
+            <div>
+              <div className="text-slate-600">Contact</div>
+              <div className="font-medium">
+                {viewFeedback.anonymous
+                  ? "Anonymous"
+                  : viewFeedback.contact_email || "-"}
+              </div>
+            </div>
+            {viewFeedback.subject && (
+              <div>
+                <div className="text-slate-600">Subject</div>
+                <div className="font-medium">{viewFeedback.subject}</div>
+              </div>
+            )}
+            <div>
+              <div className="text-slate-600">Message</div>
+              <div className="text-slate-800 whitespace-pre-wrap">
+                {viewFeedback.message}
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {viewUpdate && (
+        <UpdateRequestModal
+          request={viewUpdate}
+          onClose={() => setViewUpdate(null)}
+          onReviewed={(msg) => {
+            setViewUpdate(null);
+            setUpdatesNotice(msg);
+            if (tab === "updates") {
+              (async () => {
+                try {
+                  setUpdatesLoading(true);
+                  const token = localStorage.getItem("auth_token") || "";
+                  const res = await fetch(
+                    `${API_URL}/update-requests?status=pending`,
+                    {
+                      headers: token
+                        ? { Authorization: `Bearer ${token}` }
+                        : {},
+                    }
+                  );
+                  const data = await res.json();
+                  if (res.ok)
+                    setUpdates(
+                      Array.isArray(data.requests) ? data.requests : []
+                    );
+                } finally {
+                  setUpdatesLoading(false);
+                }
+              })();
+            }
+          }}
+        />
       )}
     </div>
   );
@@ -1694,6 +1947,550 @@ function ChartBar({
         <Bar data={data} options={options} />
       )}
     </div>
+  );
+}
+
+function UserDetailsModal({
+  user,
+  onClose,
+  onUpdated,
+}: {
+  user: UserRow;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+
+  const act = async (action: "verify" | "reject" | "pending") => {
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(`${API_URL}/users/${user.id}/verification`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed");
+      onUpdated();
+    } catch (e) {
+      // simple swallow
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Modal
+      title={`User: ${user.first_name} ${user.last_name}`}
+      onClose={onClose}
+      actions={
+        <div className="flex gap-2">
+          <button
+            className="rounded-md bg-slate-200 px-3 py-2"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Close
+          </button>
+          <button
+            className="rounded-md bg-amber-500 px-3 py-2 text-white"
+            onClick={() => act("pending")}
+            disabled={saving}
+          >
+            Set Pending
+          </button>
+          <button
+            className="rounded-md bg-red-600 px-3 py-2 text-white"
+            onClick={() => act("reject")}
+            disabled={saving}
+          >
+            Reject
+          </button>
+          <button
+            className="rounded-md bg-emerald-600 px-3 py-2 text-white"
+            onClick={() => act("verify")}
+            disabled={saving}
+          >
+            Verify
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <div className="text-slate-600">Email</div>
+            <div className="font-medium">{user.email}</div>
+          </div>
+          <div>
+            <div className="text-slate-600">Mobile</div>
+            <div className="font-medium">{user.mobile_number || "-"}</div>
+          </div>
+          <div>
+            <div className="text-slate-600">Barangay / Zone</div>
+            <div className="font-medium">
+              {user.barangay || ""} {user.zone ? `• ${user.zone}` : ""}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Registered</div>
+            <div className="font-medium">
+              {new Date(user.created_at).toLocaleString()}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-600 mb-1">ID Document</div>
+          {user.id_document_path ? (
+            <img
+              src={resolveAssetUrl(user.id_document_path)}
+              alt="ID"
+              className="h-40 rounded-md border border-slate-200 object-cover"
+            />
+          ) : (
+            <div className="text-slate-500">No ID uploaded</div>
+          )}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function ReportDetailsModal({
+  report,
+  onClose,
+  onProgressChanged,
+}: {
+  report: ReportDetail;
+  onClose: () => void;
+  onProgressChanged: (p: ReportProgress) => void;
+}) {
+  const [progress, setProgress] = useState<ReportProgress>(report.progress);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [resFiles, setResFiles] = useState<FileList | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [localReport, setLocalReport] = useState(report);
+  const originalProgress = useRef<ReportProgress>(report.progress);
+  const hasChanges = progress !== originalProgress.current;
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  const save = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccess(null);
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(`${API_URL}/reports/${report.id}/progress`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ progress }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to update");
+      setSuccess("✅ Report status updated successfully!");
+      setLocalReport((prev) => ({ ...prev, progress }));
+      onProgressChanged(progress);
+      originalProgress.current = progress;
+    } catch (e: any) {
+      setError(e?.message || "Failed to update report status");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const uploadResolution = async (markResolved: boolean) => {
+    if (!resFiles || resFiles.length === 0) return;
+    try {
+      setUploading(true);
+      setError(null);
+      setSuccess(null);
+      const fd = new FormData();
+      Array.from(resFiles).forEach((f) => fd.append("photos[]", f));
+      if (markResolved) {
+        fd.append("mark_resolved", "1");
+        setProgress("resolved");
+      }
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(
+        `${API_URL}/reports/${report.id}/resolution-photos`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: fd,
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Upload failed");
+      const updated = data.report as ReportDetail & {
+        resolution_photos?: string[];
+      };
+      setLocalReport((r) => ({ ...r, ...updated } as any));
+      if (markResolved) {
+        setSuccess(
+          "✅ Resolution photos uploaded and report marked as resolved!"
+        );
+        onProgressChanged("resolved");
+      } else {
+        setSuccess("✅ Resolution photos uploaded successfully!");
+      }
+      setResFiles(null);
+    } catch (e: any) {
+      setError(e?.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <Modal
+      title={`Report ${report.report_id}`}
+      onClose={onClose}
+      size="4xl"
+      actions={
+        <div className="flex gap-2">
+          <button
+            className="rounded-md px-3 py-2 bg-slate-200 text-slate-800"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Close
+          </button>
+          <button
+            className="rounded-md px-3 py-2 bg-[#1e3a8a] text-white disabled:opacity-50"
+            onClick={save}
+            disabled={saving || !hasChanges}
+          >
+            {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      }
+    >
+      {success && (
+        <div className="mb-4 relative rounded-xl border border-emerald-300 bg-emerald-50/90 backdrop-blur-md px-4 py-3 shadow-lg animate-in slide-in-from-top-2 duration-300">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent rounded-xl" />
+          <div className="relative flex items-center gap-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-emerald-700 font-medium">{success}</span>
+          </div>
+        </div>
+      )}
+      {error && (
+        <div className="mb-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      <div className="space-y-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-slate-600">Submitted by</div>
+            <div className="font-medium">{localReport.submitter_name}</div>
+          </div>
+          <div>
+            <div className="text-slate-600">Date Submitted</div>
+            <div className="font-medium">
+              {new Date(localReport.created_at).toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Category</div>
+            <div className="font-medium capitalize">
+              {localReport.type.replaceAll("_", " ")}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Status</div>
+            <div className="font-medium">
+              <select
+                className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+                value={progress}
+                onChange={(e) => setProgress(e.target.value as ReportProgress)}
+              >
+                <option value="pending">Pending</option>
+                <option value="in_review">In review</option>
+                <option value="assigned">Assigned</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-slate-600">Address</div>
+            <div className="font-medium">{localReport.address}</div>
+          </div>
+          <div>
+            <div className="text-slate-600">Gender / Age</div>
+            <div className="font-medium">
+              {localReport.gender} • {localReport.age}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-600">Description</div>
+          <div className="text-slate-800 whitespace-pre-wrap">
+            {localReport.description}
+          </div>
+        </div>
+        {Array.isArray(localReport.photos) && localReport.photos.length > 0 && (
+          <div>
+            <div className="text-slate-600 mb-2">Photos</div>
+            <div className="flex flex-wrap gap-3">
+              {localReport.photos.map((src, i) => (
+                <img
+                  key={i}
+                  src={resolveAssetUrl(src)}
+                  alt="attachment"
+                  className="h-24 w-36 rounded-md object-cover border border-slate-200"
+                />
+              ))}
+            </div>
+          </div>
+        )}
+        <div>
+          <div className="text-slate-600 mb-2">Resolution Evidence (After)</div>
+          {Array.isArray((localReport as any).resolution_photos) &&
+          (localReport as any).resolution_photos.length > 0 ? (
+            <div className="flex flex-wrap gap-3 mb-3">
+              {(localReport as any).resolution_photos.map(
+                (src: string, i: number) => (
+                  <img
+                    key={i}
+                    src={resolveAssetUrl(src)}
+                    alt="after"
+                    className="h-24 w-36 rounded-md object-cover border border-slate-200"
+                  />
+                )
+              )}
+            </div>
+          ) : (
+            <div className="text-slate-500 mb-2">No after images yet.</div>
+          )}
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              multiple
+              onChange={(e) => setResFiles(e.target.files)}
+              className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm"
+            />
+            <button
+              className="rounded-md bg-emerald-600 px-3 py-2 text-white disabled:opacity-50"
+              disabled={uploading || !resFiles || resFiles.length === 0}
+              onClick={() => uploadResolution(true)}
+            >
+              {uploading ? "Uploading..." : "Upload & Mark Resolved"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function UpdateRequestModal({
+  request,
+  onClose,
+  onReviewed,
+}: {
+  request: any;
+  onClose: () => void;
+  onReviewed: (msg: string) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const approve = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(
+        `${API_URL}/update-requests/${request.id}/review`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ action: "approve" }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to approve");
+      onReviewed("✅ Request approved and applied.");
+    } catch (e: any) {
+      setError(e?.message || "Failed to approve");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const reject = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(
+        `${API_URL}/update-requests/${request.id}/review`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ action: "reject" }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to reject");
+      onReviewed("✅ Request rejected.");
+    } catch (e: any) {
+      setError(e?.message || "Failed to reject");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const diffRows: Array<{ label: string; oldVal: any; newVal: any }> = [];
+  const map: Array<{ key: string; label: string }> = [
+    { key: "first_name", label: "First name" },
+    { key: "middle_name", label: "Middle name" },
+    { key: "last_name", label: "Last name" },
+    { key: "email", label: "Email" },
+    { key: "mobile_number", label: "Mobile" },
+    { key: "barangay", label: "Barangay" },
+    { key: "zone", label: "Zone" },
+  ];
+  map.forEach(({ key, label }) => {
+    const newVal = (request as any)[key];
+    if (newVal !== null && newVal !== undefined && String(newVal) !== "") {
+      const oldVal = request.user ? (request.user as any)[key] : undefined;
+      diffRows.push({ label, oldVal, newVal });
+    }
+  });
+  if (request.password) {
+    diffRows.push({
+      label: "Password",
+      oldVal: "••••••••",
+      newVal: "••••••••",
+    });
+  }
+
+  return (
+    <Modal
+      title={`Update Request #${request.id}`}
+      onClose={onClose}
+      actions={
+        <div className="flex gap-2">
+          <button
+            className="rounded-md bg-slate-200 px-3 py-2"
+            onClick={onClose}
+            disabled={saving}
+          >
+            Close
+          </button>
+          <button
+            className="rounded-md bg-red-600 px-3 py-2 text-white disabled:opacity-50"
+            onClick={reject}
+            disabled={saving}
+          >
+            Reject
+          </button>
+          <button
+            className="rounded-md bg-emerald-600 px-3 py-2 text-white disabled:opacity-50"
+            onClick={approve}
+            disabled={saving}
+          >
+            Approve & Apply
+          </button>
+        </div>
+      }
+    >
+      {error && (
+        <div className="mb-3 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      <div className="space-y-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <div className="text-slate-600">User</div>
+            <div className="font-medium">
+              {request.user
+                ? `${request.user.first_name} ${request.user.last_name}`
+                : `#${request.user_id}`}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Requested At</div>
+            <div className="font-medium">
+              {new Date(request.created_at).toLocaleString()}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-600 mb-2">Changes</div>
+          {diffRows.length === 0 ? (
+            <div className="text-slate-500">No field deltas.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="text-left text-slate-600">
+                  <tr>
+                    <th className="py-2">Field</th>
+                    <th className="py-2">Current</th>
+                    <th className="py-2">Requested</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {diffRows.map((r, i) => (
+                    <tr key={i} className="border-t border-slate-100">
+                      <td className="py-2">{r.label}</td>
+                      <td className="py-2">{r.oldVal ?? "-"}</td>
+                      <td className="py-2 font-medium">{r.newVal}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div>
+          <div className="text-slate-600 mb-1">New Valid ID</div>
+          {request.id_document_path ? (
+            <img
+              src={resolveAssetUrl(request.id_document_path)}
+              alt="ID"
+              className="h-40 rounded-md border border-slate-200 object-cover"
+            />
+          ) : (
+            <div className="text-slate-500">No ID provided</div>
+          )}
+        </div>
+      </div>
+    </Modal>
   );
 }
 
