@@ -36,6 +36,14 @@ type ApiReport = {
   date_generated?: string;
   created_at: string;
   updated_at: string;
+  resolved_by?: number | null;
+  resolved_at?: string | null;
+  resolver?: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    role?: "citizen" | "admin" | "mayor" | string;
+  } | null;
 };
 
 interface CitizenDashboardProps {
@@ -563,6 +571,8 @@ export default function CitizenDashboard({
                           afterUrl={(r as any).resolution_photos?.[0]}
                           createdAt={r.created_at}
                           meta={`${r.type.replaceAll("_", " ")} • ${r.address}`}
+                          resolvedByRole={r.resolver?.role}
+                          resolvedAt={r.resolved_at}
                         />
                       ))}
                     </div>
@@ -699,6 +709,31 @@ export default function CitizenDashboard({
                       <p className="text-sm text-slate-600">
                         Submitted by {detailsReport.submitter_name}
                       </p>
+                      {detailsReport.resolver?.role && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          Resolved by{" "}
+                          {detailsReport.resolver.role === "mayor"
+                            ? "Mayor"
+                            : detailsReport.resolver.role === "admin"
+                            ? "Admin"
+                            : "Staff"}
+                          {detailsReport.resolved_at && (
+                            <>
+                              {" "}
+                              on{" "}
+                              {new Date(
+                                detailsReport.resolved_at
+                              ).toLocaleString(undefined, {
+                                month: "short",
+                                day: "2-digit",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </>
+                          )}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <div
@@ -1708,7 +1743,19 @@ function TrackFeedback({
                       {r.address}
                     </td>
                     <td className="py-2">
-                      <StatusPill status={r.progress as any} />
+                      <div className="flex flex-col gap-0.5">
+                        <StatusPill status={r.progress as any} />
+                        {r.progress === "resolved" && r.resolver?.role && (
+                          <span className="text-[10px] text-slate-500">
+                            by{" "}
+                            {r.resolver.role === "mayor"
+                              ? "Mayor"
+                              : r.resolver.role === "admin"
+                              ? "Admin"
+                              : "Staff"}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-2">
                       <button

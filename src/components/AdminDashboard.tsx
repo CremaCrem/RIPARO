@@ -1,6 +1,9 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import { Bar } from "react-chartjs-2";
+import Modal from "./Modal";
+import ReportCard from "./ReportCard";
+import { API_URL, resolveAssetUrl } from "../config";
 import RIPARO_Logo from "../assets/RIPARO_Logo_White.png";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -33,16 +36,14 @@ ChartJS.register(
   Tooltip,
   ChartLegend
 );
-import Modal from "./Modal";
-import { API_URL, resolveAssetUrl } from "../config";
 
-type StaffTab =
+type AdminTab =
   | "dashboard"
   | "reports"
-  | "overview"
-  | "users"
   | "feedback"
-  | "updates";
+  | "users"
+  | "updates"
+  | "resolved";
 type StatCard = {
   label: string;
   value: number;
@@ -50,6 +51,43 @@ type StatCard = {
   icon: React.ComponentType<{ className?: string }>;
   bgColor?: string;
   borderColor?: string;
+};
+
+type ReportProgress =
+  | "pending"
+  | "in_review"
+  | "assigned"
+  | "resolved"
+  | "rejected";
+type ReportRow = {
+  id: number;
+  report_id: string;
+  type: string;
+  progress: ReportProgress;
+  created_at: string;
+  submitter_name?: string;
+  photos?: string[] | null;
+  resolution_photos?: string[] | null;
+  address?: string;
+};
+
+type ReportDetail = ReportRow & {
+  submitter_name: string;
+  age: number;
+  gender: string;
+  address: string;
+  photos?: string[] | null;
+  description: string;
+  date_generated?: string | null;
+};
+
+type FeedbackRow = {
+  id: number;
+  subject: string | null;
+  anonymous: boolean;
+  contact_email: string | null;
+  message: string;
+  created_at: string;
 };
 
 type UserRow = {
@@ -65,41 +103,18 @@ type UserRow = {
   created_at: string;
 };
 
-type ReportProgress =
-  | "pending"
-  | "in_review"
-  | "assigned"
-  | "resolved"
-  | "rejected";
-
-type ReportRow = {
-  id: number;
-  report_id: string;
-  type: string;
-  progress: ReportProgress;
-  created_at: string;
-};
-
-type ReportDetail = ReportRow & {
-  submitter_name: string;
-  age: number;
-  gender: string;
-  address: string;
-  photos?: string[] | null;
-  description: string;
-  date_generated?: string | null;
-};
-
-export default function StaffDashboard({
-  staffName = "Name of Staff",
+export default function AdminDashboard({
+  userName = "Admin User",
+  userRole = "admin",
   municipality = "San Jose, Camarines Sur",
   onLogout,
 }: {
-  staffName?: string;
+  userName?: string;
+  userRole?: "admin" | "mayor";
   municipality?: string;
   onLogout: () => void;
 }) {
-  const [tab, setTab] = useState<StaffTab>("dashboard");
+  const [tab, setTab] = useState<AdminTab>("dashboard");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -116,10 +131,10 @@ export default function StaffDashboard({
   const [reportsResolved, setReportsResolved] = useState(0);
   const [reportsRejected, setReportsRejected] = useState(0);
   const [pendingUsers, setPendingUsers] = useState(0);
+  const [pendingUpdateRequests, setPendingUpdateRequests] = useState(0);
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>(
     {}
   );
-  const [pendingUpdateRequests, setPendingUpdateRequests] = useState(0);
 
   // Animated counter hook
   const useAnimatedCounter = (target: number, duration = 1000) => {
@@ -150,15 +165,29 @@ export default function StaffDashboard({
   const animatedPendingUsers = useAnimatedCounter(pendingUsers);
   const animatedUpdateRequests = useAnimatedCounter(pendingUpdateRequests);
 
-  const [users, setUsers] = useState<UserRow[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
-  const [usersError, setUsersError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<
-    "all" | "pending" | "verified" | "rejected"
-  >("pending");
-  const [viewUser, setViewUser] = useState<UserRow | null>(null);
+  // Close mobile menu when tab changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [tab]);
 
-  // Reports state (admin view)
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        mobileMenuOpen &&
+        !target.closest("[data-mobile-menu]") &&
+        !target.closest("[data-mobile-menu]")
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // Lists state
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
@@ -178,7 +207,26 @@ export default function StaffDashboard({
   }>({ status: "", type: "", date_from: "", date_to: "" });
   const [detailReport, setDetailReport] = useState<ReportDetail | null>(null);
 
-  // Update requests (profile changes) state
+  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const [feedbackPerPage, setFeedbackPerPage] = useState(10);
+  const [feedbackTotal, setFeedbackTotal] = useState(0);
+  const [feedbackFilters, setFeedbackFilters] = useState<{
+    date_from: string;
+    date_to: string;
+  }>({ date_from: "", date_to: "" });
+  const [viewFeedback, setViewFeedback] = useState<FeedbackRow | null>(null);
+
+  const [users, setUsers] = useState<UserRow[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "verified" | "rejected"
+  >("all");
+  const [viewUser, setViewUser] = useState<UserRow | null>(null);
+
   type UpdateRequestRow = {
     id: number;
     user_id: number;
@@ -189,7 +237,7 @@ export default function StaffDashboard({
     mobile_number?: string | null;
     barangay?: string | null;
     zone?: string | null;
-    password?: string | null; // hashed at rest; do not display
+    password?: string | null;
     id_document_path?: string | null;
     status: "pending" | "approved" | "rejected";
     created_at: string;
@@ -210,49 +258,13 @@ export default function StaffDashboard({
   const [viewUpdate, setViewUpdate] = useState<UpdateRequestRow | null>(null);
   const [updatesNotice, setUpdatesNotice] = useState<string | null>(null);
 
-  // Feedback state
-  type FeedbackRow = {
-    id: number;
-    subject: string | null;
-    anonymous: boolean;
-    contact_email: string | null;
-    message: string;
-    created_at: string;
-  };
-  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
-  const [feedbackError, setFeedbackError] = useState<string | null>(null);
-  const [feedbackPage, setFeedbackPage] = useState(1);
-  const [feedbackPerPage, setFeedbackPerPage] = useState(10);
-  const [feedbackTotal, setFeedbackTotal] = useState(0);
-  const [feedbackFilters, setFeedbackFilters] = useState<{
-    date_from: string;
-    date_to: string;
-  }>({ date_from: "", date_to: "" });
-  const [viewFeedback, setViewFeedback] = useState<FeedbackRow | null>(null);
-
-  useEffect(() => {
-    if (tab !== "users") return;
-    const load = async () => {
-      setUsersLoading(true);
-      setUsersError(null);
-      try {
-        const token = localStorage.getItem("auth_token") || "";
-        const qs = filter === "all" ? "" : `?status=${filter}`;
-        const res = await fetch(`${API_URL}/users${qs}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.message || "Failed to load users");
-        setUsers(Array.isArray(data.users) ? data.users : []);
-      } catch (e: any) {
-        setUsersError(e?.message || "Failed to load users");
-      } finally {
-        setUsersLoading(false);
-      }
-    };
-    load();
-  }, [tab, filter]);
+  // Resolved reports state
+  const [resolvedReports, setResolvedReports] = useState<ReportRow[]>([]);
+  const [resolvedLoading, setResolvedLoading] = useState(false);
+  const [resolvedError, setResolvedError] = useState<string | null>(null);
+  const [resolvedPage, setResolvedPage] = useState(1);
+  const [resolvedPerPage, setResolvedPerPage] = useState(12);
+  const [resolvedTotal, setResolvedTotal] = useState(0);
 
   const stats: StatCard[] = useMemo(
     () => [
@@ -292,23 +304,119 @@ export default function StaffDashboard({
     [totalReports, reportsPending, reportsResolved, reportsRejected]
   );
 
-  // removed old dummy breakdown
+  function getDateFrom(range: "day" | "week" | "month" | "year"): string {
+    const d = new Date();
+    if (range === "day") d.setDate(d.getDate() - 1);
+    if (range === "week") d.setDate(d.getDate() - 7);
+    if (range === "month") d.setMonth(d.getMonth() - 1);
+    if (range === "year") d.setFullYear(d.getFullYear() - 1);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
 
-  const overviewRows = useMemo(
-    () => [
-      {
-        date: "Jan 21, 2025",
-        category: "Infrastructure",
-        status: "in progress",
-      },
-      { date: "Jan 20, 2025", category: "Sanitation", status: "resolved" },
-      { date: "Jan 19, 2025", category: "Noise", status: "rejected" },
-      { date: "Jan 18, 2025", category: "Environment", status: "in progress" },
-    ],
-    []
-  );
+  // Dashboard stats
+  useEffect(() => {
+    if (tab !== "dashboard") return;
+    const load = async () => {
+      setStatsLoading(true);
+      setStatsError(null);
+      try {
+        const token = localStorage.getItem("auth_token") || "";
+        const headers: Record<string, string> = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+        const date_from = getDateFrom(timeRange);
 
-  // Load reports when tab/filters/page change
+        // Reports aggregate
+        let page = 1;
+        const perPage = 100;
+        let total = 0,
+          pending = 0,
+          resolved = 0,
+          rejected = 0;
+        const categories: Record<string, number> = {};
+        for (let i = 0; i < 50; i++) {
+          const params = new URLSearchParams();
+          params.set("per_page", String(perPage));
+          params.set("page", String(page));
+          params.set("date_from", date_from);
+          const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+            headers,
+          });
+          const data = await res.json();
+          const items: ReportRow[] = Array.isArray(data.data)
+            ? data.data
+            : data.reports || [];
+          items.forEach((r) => {
+            total += 1;
+            if (r.progress === "pending" || r.progress === "in_review")
+              pending += 1;
+            else if (r.progress === "resolved") resolved += 1;
+            else if (r.progress === "rejected") rejected += 1;
+            categories[r.type] = (categories[r.type] || 0) + 1;
+          });
+          if (items.length < perPage) break;
+          page += 1;
+        }
+        setTotalReports(total);
+        setReportsPending(pending);
+        setReportsResolved(resolved);
+        setReportsRejected(rejected);
+        setCategoryCounts(categories);
+
+        // Feedback total
+        let fbTotal = 0;
+        {
+          let page = 1;
+          for (let i = 0; i < 50; i++) {
+            const params = new URLSearchParams();
+            params.set("per_page", String(perPage));
+            params.set("page", String(page));
+            params.set("date_from", date_from);
+            const res = await fetch(
+              `${API_URL}/feedback?${params.toString()}`,
+              { headers }
+            );
+            const data = await res.json();
+            const items: any[] = Array.isArray(data.data)
+              ? data.data
+              : data.feedback || [];
+            fbTotal += items.length;
+            if (items.length < perPage) break;
+            page += 1;
+          }
+        }
+        setTotalFeedback(fbTotal);
+
+        // Pending users & update requests
+        {
+          const res = await fetch(`${API_URL}/users?status=pending`, {
+            headers,
+          });
+          const data = await res.json();
+          setPendingUsers(Array.isArray(data.users) ? data.users.length : 0);
+        }
+        {
+          const res = await fetch(`${API_URL}/update-requests?status=pending`, {
+            headers,
+          });
+          const data = await res.json();
+          setPendingUpdateRequests(
+            Array.isArray(data.requests) ? data.requests.length : 0
+          );
+        }
+      } catch (e: any) {
+        setStatsError(e?.message || "Failed to load dashboard stats");
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    load();
+  }, [tab, timeRange]);
+
+  // Reports list
   useEffect(() => {
     if (tab !== "reports") return;
     const load = async () => {
@@ -329,7 +437,6 @@ export default function StaffDashboard({
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.message || "Failed to load reports");
-        // Laravel paginator structure
         const items: ReportRow[] = Array.isArray(data.data)
           ? data.data
           : data.reports || [];
@@ -346,156 +453,7 @@ export default function StaffDashboard({
     load();
   }, [tab, reportPage, reportPerPage, reportFilters]);
 
-  // Load update requests when tab changes
-  useEffect(() => {
-    if (tab !== "updates") return;
-    const load = async () => {
-      setUpdatesLoading(true);
-      setUpdatesError(null);
-      try {
-        const token = localStorage.getItem("auth_token") || "";
-        const res = await fetch(`${API_URL}/update-requests?status=pending`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        const data = await res.json();
-        if (!res.ok)
-          throw new Error(data?.message || "Failed to load update requests");
-        const items: UpdateRequestRow[] = Array.isArray(data.requests)
-          ? data.requests
-          : [];
-        setUpdates(items);
-      } catch (e: any) {
-        setUpdatesError(e?.message || "Failed to load update requests");
-      } finally {
-        setUpdatesLoading(false);
-      }
-    };
-    load();
-  }, [tab]);
-
-  // Helpers for dashboard timeframe
-  function getDateFrom(range: "day" | "week" | "month" | "year"): string {
-    const d = new Date();
-    if (range === "day") d.setDate(d.getDate() - 1);
-    if (range === "week") d.setDate(d.getDate() - 7);
-    if (range === "month") d.setMonth(d.getMonth() - 1);
-    if (range === "year") d.setFullYear(d.getFullYear() - 1);
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${yyyy}-${mm}-${dd}`;
-  }
-
-  // Load dashboard stats (totals + categories + pending users)
-  useEffect(() => {
-    if (tab !== "dashboard") return;
-    const load = async () => {
-      setStatsLoading(true);
-      setStatsError(null);
-      try {
-        const token = localStorage.getItem("auth_token") || "";
-        const headers: Record<string, string> = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-        const date_from = getDateFrom(timeRange);
-
-        // Fetch reports across pages and aggregate
-        let page = 1;
-        const perPage = 100;
-        let total = 0;
-        let pending = 0;
-        let resolved = 0;
-        let rejected = 0;
-        const categories: Record<string, number> = {};
-        // Loop pages until less than perPage returned
-        // Guards in case of large datasets
-        for (let i = 0; i < 50; i++) {
-          const params = new URLSearchParams();
-          params.set("per_page", String(perPage));
-          params.set("page", String(page));
-          params.set("date_from", date_from);
-          const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
-            headers,
-          });
-          const data = await res.json();
-          const items: ReportRow[] = Array.isArray(data.data)
-            ? data.data
-            : data.reports || [];
-          items.forEach((r) => {
-            total += 1;
-            if (r.progress === "pending" || r.progress === "in_review")
-              pending += 1;
-            else if (r.progress === "resolved") resolved += 1;
-            else if (r.progress === "rejected") rejected += 1;
-            const key = r.type;
-            categories[key] = (categories[key] || 0) + 1;
-          });
-          if (items.length < perPage) break;
-          page += 1;
-        }
-        setTotalReports(total);
-        setReportsPending(pending);
-        setReportsResolved(resolved);
-        setReportsRejected(rejected);
-        setCategoryCounts(categories);
-
-        // Fetch feedback totals with date filter
-        let fbTotal = 0;
-        {
-          let page = 1;
-          for (let i = 0; i < 50; i++) {
-            const params = new URLSearchParams();
-            params.set("per_page", String(perPage));
-            params.set("page", String(page));
-            params.set("date_from", date_from);
-            const res = await fetch(
-              `${API_URL}/feedback?${params.toString()}`,
-              {
-                headers,
-              }
-            );
-            const data = await res.json();
-            const items: any[] = Array.isArray(data.data)
-              ? data.data
-              : data.feedback || [];
-            fbTotal += items.length;
-            if (items.length < perPage) break;
-            page += 1;
-          }
-        }
-        setTotalFeedback(fbTotal);
-
-        // Pending users (unverified)
-        {
-          const res = await fetch(`${API_URL}/users?status=pending`, {
-            headers,
-          });
-          const data = await res.json();
-          const items: any[] = Array.isArray(data.users) ? data.users : [];
-          setPendingUsers(items.length);
-        }
-
-        // Pending profile update requests
-        {
-          const res = await fetch(`${API_URL}/update-requests?status=pending`, {
-            headers,
-          });
-          const data = await res.json();
-          const items: any[] = Array.isArray(data.requests)
-            ? data.requests
-            : [];
-          setPendingUpdateRequests(items.length);
-        }
-      } catch (e: any) {
-        setStatsError(e?.message || "Failed to load dashboard stats");
-      } finally {
-        setStatsLoading(false);
-      }
-    };
-    load();
-  }, [tab, timeRange]);
-
-  // Load feedback when tab/filters/page change
+  // Feedback list
   useEffect(() => {
     if (tab !== "feedback") return;
     const load = async () => {
@@ -532,6 +490,54 @@ export default function StaffDashboard({
     load();
   }, [tab, feedbackPage, feedbackPerPage, feedbackFilters]);
 
+  // Users list
+  useEffect(() => {
+    if (tab !== "users") return;
+    const load = async () => {
+      setUsersLoading(true);
+      setUsersError(null);
+      try {
+        const token = localStorage.getItem("auth_token") || "";
+        const qs = filter === "all" ? "" : `?status=${filter}`;
+        const res = await fetch(`${API_URL}/users${qs}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.message || "Failed to load users");
+        setUsers(Array.isArray(data.users) ? data.users : []);
+      } catch (e: any) {
+        setUsersError(e?.message || "Failed to load users");
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+    load();
+  }, [tab, filter]);
+
+  // Update requests list
+  useEffect(() => {
+    if (tab !== "updates") return;
+    const load = async () => {
+      setUpdatesLoading(true);
+      setUpdatesError(null);
+      try {
+        const token = localStorage.getItem("auth_token") || "";
+        const res = await fetch(`${API_URL}/update-requests?status=pending`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.message || "Failed to load update requests");
+        setUpdates(Array.isArray(data.requests) ? data.requests : []);
+      } catch (e: any) {
+        setUpdatesError(e?.message || "Failed to load update requests");
+      } finally {
+        setUpdatesLoading(false);
+      }
+    };
+    load();
+  }, [tab]);
+
   const openReportDetail = async (id: number) => {
     try {
       const token = localStorage.getItem("auth_token") || "";
@@ -546,6 +552,40 @@ export default function StaffDashboard({
       setReportsError((e as any)?.message || "Failed to load report");
     }
   };
+
+  // Load resolved reports when tab changes
+  useEffect(() => {
+    if (tab !== "resolved") return;
+    const load = async () => {
+      setResolvedLoading(true);
+      setResolvedError(null);
+      try {
+        const token = localStorage.getItem("auth_token") || "";
+        const params = new URLSearchParams();
+        params.set("page", String(resolvedPage));
+        params.set("per_page", String(resolvedPerPage));
+        params.set("status", "resolved");
+        const res = await fetch(`${API_URL}/reports?${params.toString()}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        const data = await res.json();
+        if (!res.ok)
+          throw new Error(data?.message || "Failed to load resolved reports");
+        const items: ReportRow[] = Array.isArray(data.data)
+          ? data.data
+          : data.reports || [];
+        setResolvedReports(items);
+        const total =
+          typeof data.total === "number" ? data.total : items.length;
+        setResolvedTotal(total);
+      } catch (e: any) {
+        setResolvedError(e?.message || "Failed to load resolved reports");
+      } finally {
+        setResolvedLoading(false);
+      }
+    };
+    load();
+  }, [tab, resolvedPage, resolvedPerPage]);
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
@@ -568,6 +608,7 @@ export default function StaffDashboard({
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 rounded-lg hover:bg-white/10 transition-colors"
           aria-label="Toggle mobile menu"
+          data-mobile-menu
         >
           <svg
             className="w-6 h-6"
@@ -597,16 +638,16 @@ export default function StaffDashboard({
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
-          <div className="fixed left-0 top-0 h-full w-64 bg-[#0e2a7a] text-white overflow-y-auto">
-            <div className="p-4">
-              <div className="flex items-center gap-3 mb-6">
+          <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0e2a7a] text-white shadow-xl">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-8">
                 <img
                   src={RIPARO_Logo}
                   alt="RIPARO"
                   className="h-10 w-10 object-contain"
                 />
                 <div>
-                  <div className="text-base font-semibold leading-none">
+                  <div className="text-base font-semibold leading-none tracking-wide">
                     RIPARO
                   </div>
                   <div className="text-[11px] text-white/70 leading-none mt-0.5">
@@ -620,57 +661,44 @@ export default function StaffDashboard({
                   label="Dashboard"
                   active={tab === "dashboard"}
                   icon={<HomeIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setTab("dashboard");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setTab("dashboard")}
                 />
                 <MobileSideLink
                   label="Reports"
                   active={tab === "reports"}
                   icon={<DocumentTextIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setTab("reports");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setTab("reports")}
                 />
                 <MobileSideLink
                   label="Feedback"
                   active={tab === "feedback"}
                   icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setTab("feedback");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setTab("feedback")}
                 />
                 <MobileSideLink
                   label="Users"
                   active={tab === "users"}
                   icon={<UserGroupIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setTab("users");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setTab("users")}
                 />
                 <MobileSideLink
                   label="Update Requests"
                   active={tab === "updates"}
                   icon={<ClipboardDocumentListIcon className="h-5 w-5" />}
-                  onClick={() => {
-                    setTab("updates");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={() => setTab("updates")}
                 />
-                <button
-                  className="w-full text-left rounded-lg px-3 py-2.5 text-white/90 transition-all duration-200 hover:bg-white/10 flex items-center gap-3 mt-4"
-                  onClick={() => {
-                    setConfirmLogout(true);
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                  <span>Logout</span>
-                </button>
+                <MobileSideLink
+                  label="Resolved Reports"
+                  active={tab === "resolved"}
+                  icon={<CheckCircleIcon className="h-5 w-5" />}
+                  onClick={() => setTab("resolved")}
+                />
+                <MobileSideLink
+                  label="Logout"
+                  active={false}
+                  icon={<ArrowRightOnRectangleIcon className="h-5 w-5" />}
+                  onClick={() => setConfirmLogout(true)}
+                />
               </nav>
             </div>
           </div>
@@ -681,7 +709,7 @@ export default function StaffDashboard({
         <aside
           className={`${
             collapsed ? "w-16" : "w-64"
-          } hidden lg:block shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out`}
+          } shrink-0 bg-[#0e2a7a] text-white relative overflow-hidden transition-all duration-300 ease-in-out hidden lg:block`}
         >
           <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-[#2563eb] via-[#0038A8] to-[#001a57] animate-pulse" />
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#FCD116]/5" />
@@ -767,6 +795,13 @@ export default function StaffDashboard({
               collapsed={collapsed}
               onClick={() => setTab("updates")}
             />
+            <SideLink
+              label="Resolved Reports"
+              active={tab === "resolved"}
+              icon={<CheckCircleIcon className="h-5 w-5" />}
+              collapsed={collapsed}
+              onClick={() => setTab("resolved")}
+            />
             <button
               className={`mt-4 w-full ${
                 collapsed ? "justify-center" : "text-left"
@@ -791,7 +826,7 @@ export default function StaffDashboard({
                 <div className="relative px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
                     <h1 className="text-xl font-bold tracking-tight">
-                      Welcome, {staffName}! 👋
+                      Welcome, {userName}! 👋
                     </h1>
                     <p className="text-sm text-slate-600 flex items-center gap-2">
                       <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -820,7 +855,7 @@ export default function StaffDashboard({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-4">
                 {stats.map((s) => {
                   // Get the corresponding animated count
                   let animatedCount;
@@ -870,7 +905,7 @@ export default function StaffDashboard({
                       Total Feedback
                     </div>
                     <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 shadow-sm">
-                      <ChatBubbleLeftRightIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <InboxIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
                   <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
@@ -884,7 +919,7 @@ export default function StaffDashboard({
                       New Users Pending
                     </div>
                     <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm">
-                      <UserGroupIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                      <ClockIcon className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                     </div>
                   </div>
                   <div className="mt-2 sm:mt-3 text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 transition-all duration-300 group-hover:text-slate-800">
@@ -910,13 +945,15 @@ export default function StaffDashboard({
               </div>
 
               {/* Category chart */}
-              <div className="mt-4 relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-4 sm:p-5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
+              <div className="mt-4 relative rounded-2xl border border-slate-200 bg-white/95 backdrop-blur-md p-3 sm:p-5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] transition-all duration-300">
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-white/5 rounded-2xl" />
                 <div className="relative">
                   <h2 className="text-sm font-semibold text-slate-700 mb-3">
                     Reports by category ({timeRange})
                   </h2>
-                  <ChartBar dataMap={categoryCounts} loading={statsLoading} />
+                  <div className="h-64 sm:h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">
+                    <ChartBar dataMap={categoryCounts} loading={statsLoading} />
+                  </div>
                 </div>
               </div>
             </section>
@@ -927,9 +964,9 @@ export default function StaffDashboard({
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
                   <h2 className="text-sm font-semibold text-slate-700">
-                    Citizen Feedback
+                    Citizen Reports
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full md:w-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 w-full md:w-auto">
                     <div>
                       <label className="block bg-[#0038A8] text-white text-xs font-medium px-2 py-1 rounded-t-md mb-1">
                         Status
@@ -1042,15 +1079,13 @@ export default function StaffDashboard({
                       : reportsError || `${reportTotal} total result(s)`}
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-xs sm:text-sm">
                       <thead className="text-left text-slate-600 border-b border-slate-100">
                         <tr>
-                          <th className="py-2 text-xs sm:text-sm">
-                            Date Submitted
-                          </th>
-                          <th className="py-2 text-xs sm:text-sm">Category</th>
-                          <th className="py-2 text-xs sm:text-sm">Status</th>
-                          <th className="py-2 text-xs sm:text-sm">Actions</th>
+                          <th className="py-2">Date Submitted</th>
+                          <th className="py-2">Category</th>
+                          <th className="py-2">Status</th>
+                          <th className="py-2">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1059,10 +1094,10 @@ export default function StaffDashboard({
                             key={r.id}
                             className="border-b border-slate-100 last:border-0"
                           >
-                            <td className="py-2 text-xs">
-                              {new Date(r.created_at).toLocaleDateString()}
+                            <td className="py-2">
+                              {new Date(r.created_at).toLocaleString()}
                             </td>
-                            <td className="py-2 capitalize text-xs">
+                            <td className="py-2 capitalize">
                               {r.type.replaceAll("_", " ")}
                             </td>
                             <td className="py-2">
@@ -1094,7 +1129,7 @@ export default function StaffDashboard({
                       summaryTotal={reportTotal}
                       perPage={reportPerPage}
                       page={reportPage}
-                      onPage={(p) => setReportPage(p)}
+                      onPage={(p: number) => setReportPage(p)}
                     />
                     <button
                       className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
@@ -1116,7 +1151,7 @@ export default function StaffDashboard({
                   <h2 className="text-sm font-semibold text-slate-700">
                     Citizen Feedback
                   </h2>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 w-full md:w-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 w-full md:w-auto">
                     {/* placeholders to align with Reports tab columns 1 and 2 */}
                     <div className="hidden md:block" />
                     <div className="hidden md:block" />
@@ -1228,7 +1263,7 @@ export default function StaffDashboard({
                       summaryTotal={feedbackTotal}
                       perPage={feedbackPerPage}
                       page={feedbackPage}
-                      onPage={(p) => setFeedbackPage(p)}
+                      onPage={(p: number) => setFeedbackPage(p)}
                     />
                     <button
                       className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
@@ -1238,44 +1273,6 @@ export default function StaffDashboard({
                       Next
                     </button>
                   </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {tab === "overview" && (
-            <section>
-              <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between px-5 py-4">
-                  <h2 className="text-sm font-semibold text-slate-700">
-                    Feedback Overview
-                  </h2>
-                </div>
-                <div className="px-5 pb-4 overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="text-left text-slate-600 border-b border-slate-100">
-                      <tr>
-                        <th className="py-2">Date Submitted</th>
-                        <th className="py-2">Category</th>
-                        <th className="py-2">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* placeholder content */}
-                      {overviewRows.map((r, i) => (
-                        <tr
-                          key={i}
-                          className="border-b border-slate-100 last:border-0"
-                        >
-                          <td className="py-2">{r.date}</td>
-                          <td className="py-2">{r.category}</td>
-                          <td className="py-2">
-                            <StatusPill status={r.status as any} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </section>
@@ -1303,35 +1300,41 @@ export default function StaffDashboard({
                     : usersError || `${users.length} result(s)`}
                 </div>
                 <div className="px-5 pb-4 overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-xs sm:text-sm">
                     <thead className="text-left text-slate-600">
                       <tr>
-                        <th className="py-2 text-xs sm:text-sm">Name</th>
-                        <th className="py-2 text-xs sm:text-sm hidden sm:table-cell">
-                          Email
-                        </th>
-                        <th className="py-2 text-xs sm:text-sm hidden md:table-cell">
+                        <th className="py-2">Name</th>
+                        <th className="py-2 hidden sm:table-cell">Email</th>
+                        <th className="py-2 hidden md:table-cell">
                           Barangay/Zone
                         </th>
-                        <th className="py-2 text-xs sm:text-sm">Status</th>
-                        <th className="py-2 text-xs sm:text-sm">Actions</th>
+                        <th className="py-2">Status</th>
+                        <th className="py-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {users.map((u) => (
                         <tr key={u.id} className="border-t border-slate-100">
-                          <td className="py-2 text-xs">
-                            <div className="font-medium">
+                          <td className="py-2">
+                            <div className="sm:hidden">
+                              <div className="font-medium">
+                                {u.first_name} {u.last_name}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {u.email}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {u.barangay || ""} {u.zone ? `• ${u.zone}` : ""}
+                              </div>
+                            </div>
+                            <div className="hidden sm:block">
                               {u.first_name} {u.last_name}
                             </div>
-                            <div className="text-slate-500 sm:hidden">
-                              {u.email}
-                            </div>
                           </td>
-                          <td className="py-2 hidden sm:table-cell text-xs">
+                          <td className="py-2 hidden sm:table-cell">
                             {u.email}
                           </td>
-                          <td className="py-2 hidden md:table-cell text-xs">
+                          <td className="py-2 hidden md:table-cell">
                             {u.barangay || ""} {u.zone ? `• ${u.zone}` : ""}
                           </td>
                           <td className="py-2">
@@ -1412,17 +1415,13 @@ export default function StaffDashboard({
                     : updatesError || `${updates.length} pending request(s)`}
                 </div>
                 <div className="px-5 pb-4 overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full text-xs sm:text-sm">
                     <thead className="text-left text-slate-600">
                       <tr>
-                        <th className="py-2 text-xs sm:text-sm">
-                          Requested At
-                        </th>
-                        <th className="py-2 text-xs sm:text-sm">User</th>
-                        <th className="py-2 text-xs sm:text-sm hidden md:table-cell">
-                          Summary
-                        </th>
-                        <th className="py-2 text-xs sm:text-sm">Actions</th>
+                        <th className="py-2">Requested At</th>
+                        <th className="py-2">User</th>
+                        <th className="py-2 hidden md:table-cell">Summary</th>
+                        <th className="py-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1445,10 +1444,10 @@ export default function StaffDashboard({
                         if (u.password) changes.push("password");
                         return (
                           <tr key={u.id} className="border-t border-slate-100">
-                            <td className="py-2 text-xs">
+                            <td className="py-2">
                               {new Date(u.created_at).toLocaleDateString()}
                             </td>
-                            <td className="py-2 text-xs">
+                            <td className="py-2">
                               <div className="font-medium">
                                 {u.user
                                   ? `${u.user.first_name} ${u.user.last_name}`
@@ -1462,7 +1461,7 @@ export default function StaffDashboard({
                                 </div>
                               )}
                             </td>
-                            <td className="py-2 hidden md:table-cell text-xs">
+                            <td className="py-2 hidden md:table-cell">
                               {changes.length ? changes.join(", ") : "-"}
                             </td>
                             <td className="py-2">
@@ -1478,6 +1477,81 @@ export default function StaffDashboard({
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {tab === "resolved" && (
+            <section className="space-y-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-slate-700">
+                    Resolved Reports
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm focus:border-[#0038A8] focus:ring-2 focus:ring-[#0038A8]/20 transition-all duration-200"
+                      value={resolvedPerPage}
+                      onChange={(e) => {
+                        setResolvedPage(1);
+                        setResolvedPerPage(
+                          parseInt(e.target.value || "12", 10)
+                        );
+                      }}
+                    >
+                      <option value="12">12 / page</option>
+                      <option value="24">24 / page</option>
+                      <option value="48">48 / page</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <div className="px-0 md:px-5 py-3 text-sm text-slate-600">
+                    {resolvedLoading
+                      ? "Loading..."
+                      : resolvedError || `${resolvedTotal} resolved report(s)`}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    {resolvedReports.map((r) => (
+                      <ReportCard
+                        key={r.id}
+                        reportId={r.report_id}
+                        title={r.submitter_name || r.report_id}
+                        status={r.progress}
+                        thumbUrl={r.photos?.[0]}
+                        afterUrl={r.resolution_photos?.[0]}
+                        createdAt={r.created_at}
+                        meta={`${r.type.replaceAll("_", " ")} • ${
+                          r.address || ""
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <button
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
+                      onClick={() => setResolvedPage((p) => Math.max(1, p - 1))}
+                      disabled={resolvedPage <= 1}
+                    >
+                      Prev
+                    </button>
+                    <Pagination
+                      summaryTotal={resolvedTotal}
+                      perPage={resolvedPerPage}
+                      page={resolvedPage}
+                      onPage={(p: number) => setResolvedPage(p)}
+                    />
+                    <button
+                      className="rounded-md border border-slate-300 bg-white px-3 py-1 text-sm disabled:opacity-50 btn hover:bg-slate-50 transition-all duration-200"
+                      onClick={() => setResolvedPage((p) => p + 1)}
+                      disabled={resolvedReports.length < resolvedPerPage}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
@@ -1518,7 +1592,6 @@ export default function StaffDashboard({
           user={viewUser}
           onClose={() => setViewUser(null)}
           onUpdated={() => {
-            // refresh list after status change
             setViewUser(null);
             if (tab === "users") {
               (async () => {
@@ -1544,7 +1617,6 @@ export default function StaffDashboard({
           onClose={() => setDetailReport(null)}
           onProgressChanged={(p) => {
             setDetailReport((r) => (r ? { ...r, progress: p } : r));
-            // Refresh list after progress change
             (async () => {
               try {
                 const token = localStorage.getItem("auth_token") || "";
@@ -1707,26 +1779,6 @@ function SideLink({
   );
 }
 
-function StatusPill({
-  status,
-}: {
-  status: "in progress" | "rejected" | "resolved";
-}) {
-  const map: Record<string, string> = {
-    "in progress": "bg-orange-500",
-    rejected: "bg-red-600",
-    resolved: "bg-emerald-600",
-  };
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-      <span
-        className={`h-2.5 w-2.5 rounded-full ${map[status] || "bg-slate-400"}`}
-      />
-      <span className="text-[12px] text-slate-700 capitalize">{status}</span>
-    </span>
-  );
-}
-
 function StaffStatusPill({ status }: { status: ReportProgress }) {
   const map: Record<ReportProgress, string> = {
     pending: "bg-orange-500",
@@ -1748,6 +1800,97 @@ function StaffStatusPill({ status }: { status: ReportProgress }) {
       />
       <span className="text-[12px] text-slate-700">{label}</span>
     </span>
+  );
+}
+
+function Pagination({
+  summaryTotal,
+  perPage,
+  page,
+  onPage,
+}: {
+  summaryTotal: number;
+  perPage: number;
+  page: number;
+  onPage: (page: number) => void;
+}) {
+  const totalPages = Math.max(
+    1,
+    Math.ceil((summaryTotal || 0) / Math.max(1, perPage))
+  );
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+
+  function buildPages(): number[] {
+    const pages: number[] = [];
+    const maxButtons = 7;
+    const half = Math.floor(maxButtons / 2);
+    let start = Math.max(1, currentPage - half);
+    let end = Math.min(totalPages, start + maxButtons - 1);
+    if (end - start + 1 < maxButtons) {
+      start = Math.max(1, end - maxButtons + 1);
+    }
+    for (let p = start; p <= end; p++) pages.push(p);
+    return pages;
+  }
+
+  const pages = buildPages();
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50"
+        onClick={() => onPage(Math.max(1, currentPage - 1))}
+        disabled={currentPage <= 1}
+      >
+        ‹
+      </button>
+      {pages[0] > 1 && (
+        <>
+          <button
+            className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+            onClick={() => onPage(1)}
+          >
+            1
+          </button>
+          {pages[0] > 2 && <span className="px-1 text-slate-500">…</span>}
+        </>
+      )}
+      {pages.map((p) => (
+        <button
+          key={p}
+          className={`rounded-md px-2 py-1 text-sm border ${
+            p === currentPage
+              ? "border-[#0038A8] bg-[#0038A8] text-white"
+              : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+          }`}
+          onClick={() => onPage(p)}
+        >
+          {p}
+        </button>
+      ))}
+      {pages[pages.length - 1] < totalPages && (
+        <>
+          {pages[pages.length - 1] < totalPages - 1 && (
+            <span className="px-1 text-slate-500">…</span>
+          )}
+          <button
+            className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm"
+            onClick={() => onPage(totalPages)}
+          >
+            {totalPages}
+          </button>
+        </>
+      )}
+      <button
+        className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50"
+        onClick={() => onPage(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage >= totalPages}
+      >
+        ›
+      </button>
+    </div>
   );
 }
 
@@ -1798,7 +1941,7 @@ function ChartBar({
     },
   };
   return (
-    <div className="h-64 sm:h-80 md:h-96 lg:h-[28rem] xl:h-[32rem]">
+    <div className="h-full w-full">
       {loading && <div className="text-sm text-slate-600 mb-2">Loading…</div>}
       {labels.length === 0 ? (
         <div className="text-sm text-slate-500">No data</div>
@@ -1808,8 +1951,6 @@ function ChartBar({
     </div>
   );
 }
-
-// MiniBar removed (unused)
 
 function UserDetailsModal({
   user,
@@ -1908,7 +2049,7 @@ function UserDetailsModal({
           <div className="text-slate-600 mb-1">ID Document</div>
           {user.id_document_path ? (
             <img
-              src={user.id_document_path}
+              src={resolveAssetUrl(user.id_document_path)}
               alt="ID"
               className="h-40 rounded-md border border-slate-200 object-cover"
             />
@@ -1937,14 +2078,9 @@ function ReportDetailsModal({
   const [resFiles, setResFiles] = useState<FileList | null>(null);
   const [uploading, setUploading] = useState(false);
   const [localReport, setLocalReport] = useState(report);
-
-  // Track original state to detect changes
   const originalProgress = useRef<ReportProgress>(report.progress);
-
-  // Track if any changes have been made
   const hasChanges = progress !== originalProgress.current;
 
-  // Auto-hide notifications
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => setSuccess(null), 3000);
@@ -1975,12 +2111,9 @@ function ReportDetailsModal({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update");
-
       setSuccess("✅ Report status updated successfully!");
       setLocalReport((prev) => ({ ...prev, progress }));
       onProgressChanged(progress);
-      // Reset the original progress to match the new progress
-      // This will make hasChanges return false until the next change
       originalProgress.current = progress;
     } catch (e: any) {
       setError(e?.message || "Failed to update report status");
@@ -1999,7 +2132,7 @@ function ReportDetailsModal({
       Array.from(resFiles).forEach((f) => fd.append("photos[]", f));
       if (markResolved) {
         fd.append("mark_resolved", "1");
-        setProgress("resolved"); // Update local state immediately
+        setProgress("resolved");
       }
       const token = localStorage.getItem("auth_token") || "";
       const res = await fetch(
@@ -2016,7 +2149,6 @@ function ReportDetailsModal({
         resolution_photos?: string[];
       };
       setLocalReport((r) => ({ ...r, ...updated } as any));
-
       if (markResolved) {
         setSuccess(
           "✅ Resolution photos uploaded and report marked as resolved!"
@@ -2057,7 +2189,6 @@ function ReportDetailsModal({
         </div>
       }
     >
-      {/* Success Notification */}
       {success && (
         <div className="mb-4 relative rounded-xl border border-emerald-300 bg-emerald-50/90 backdrop-blur-md px-4 py-3 shadow-lg animate-in slide-in-from-top-2 duration-300">
           <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/10 to-transparent rounded-xl" />
@@ -2140,8 +2271,6 @@ function ReportDetailsModal({
             </div>
           </div>
         )}
-
-        {/* Resolution Evidence */}
         <div>
           <div className="text-slate-600 mb-2">Resolution Evidence (After)</div>
           {Array.isArray((localReport as any).resolution_photos) &&
@@ -2354,7 +2483,7 @@ function UpdateRequestModal({
           <div className="text-slate-600 mb-1">New Valid ID</div>
           {request.id_document_path ? (
             <img
-              src={request.id_document_path}
+              src={resolveAssetUrl(request.id_document_path)}
               alt="ID"
               className="h-40 rounded-md border border-slate-200 object-cover"
             />
@@ -2367,45 +2496,6 @@ function UpdateRequestModal({
   );
 }
 
-function Pagination({
-  summaryTotal,
-  perPage,
-  page,
-  onPage,
-}: {
-  summaryTotal: number;
-  perPage: number;
-  page: number;
-  onPage: (p: number) => void;
-}) {
-  const totalPages = Math.max(1, Math.ceil(summaryTotal / perPage));
-  const pages: number[] = [];
-  const windowSize = 5;
-  let start = Math.max(1, page - Math.floor(windowSize / 2));
-  let end = Math.min(totalPages, start + windowSize - 1);
-  start = Math.max(1, Math.min(start, end - windowSize + 1));
-  for (let p = start; p <= end; p++) pages.push(p);
-  return (
-    <div className="flex items-center gap-1">
-      {pages.map((p) => (
-        <button
-          key={p}
-          className={`rounded-md px-3 py-1 text-sm border ${
-            p === page
-              ? "bg-[#1e3a8a] text-white border-[#1e3a8a]"
-              : "bg-white text-slate-800 border-slate-300"
-          }`}
-          onClick={() => onPage(p)}
-        >
-          {p}
-        </button>
-      ))}
-      <span className="ml-2 text-xs text-slate-500">of {totalPages}</span>
-    </div>
-  );
-}
-
-// Mobile sidebar link component
 function MobileSideLink({
   label,
   active,

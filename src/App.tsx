@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import Auth from "./components/Auth";
 import CitizenDashboard from "./components/CitizenDashboard";
-import StaffDashboard from "./components/StaffDashboard";
-import MayorDashboard from "./components/MayorDashboard";
+import AdminDashboard from "./components/AdminDashboard";
 
 type User = {
   id: number;
@@ -87,11 +86,14 @@ function App() {
 
   // Route to dashboard based on role
   const role = user?.role || "citizen";
-  if (role === "mayor") {
-    return <MayorDashboard onLogout={handleLogout} />;
-  }
-  if (role === "admin") {
-    return <StaffDashboard onLogout={handleLogout} />;
+  if (role === "mayor" || role === "admin") {
+    return (
+      <AdminDashboard
+        userName={`${user?.first_name} ${user?.last_name}`}
+        userRole={role}
+        onLogout={handleLogout}
+      />
+    );
   }
   return (
     <CitizenDashboard

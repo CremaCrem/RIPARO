@@ -9,6 +9,8 @@ export type ReportCardProps = {
   afterUrl?: string;
   createdAt?: string;
   meta?: string;
+  resolvedByRole?: "admin" | "mayor" | "citizen" | string;
+  resolvedAt?: string | null;
 };
 
 export default function ReportCard({
@@ -19,6 +21,8 @@ export default function ReportCard({
   afterUrl,
   createdAt,
   meta,
+  resolvedByRole,
+  resolvedAt,
 }: ReportCardProps) {
   const color =
     status === "resolved"
@@ -118,6 +122,29 @@ export default function ReportCard({
             </span>
           )}
         </div>
+        {status === "resolved" && resolvedByRole && (
+          <div className="mt-1 text-[10px] sm:text-[11px] text-slate-500">
+            Resolved by{" "}
+            {resolvedByRole === "mayor"
+              ? "Mayor"
+              : resolvedByRole === "admin"
+              ? "Admin"
+              : "Staff"}
+            {resolvedAt && (
+              <>
+                {" "}
+                ·{" "}
+                {new Date(resolvedAt).toLocaleString(undefined, {
+                  month: "short",
+                  day: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </>
+            )}
+          </div>
+        )}
         {meta && (
           <div
             className="mt-1 text-[10px] sm:text-[11px] text-slate-600 truncate"
