@@ -826,7 +826,8 @@ export default function AdminDashboard({
                 <div className="relative px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
                     <h1 className="text-xl font-bold tracking-tight">
-                      Welcome, {userName}! 👋
+                      Welcome,{" "}
+                      {userRole === "mayor" ? "Hon. Mayor" : "Admin"} {userName}! 👋
                     </h1>
                     <p className="text-sm text-slate-600 flex items-center gap-2">
                       <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
