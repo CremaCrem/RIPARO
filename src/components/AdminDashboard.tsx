@@ -595,11 +595,11 @@ export default function AdminDashboard({
           <img
             src={RIPARO_Logo}
             alt="RIPARO"
-            className="h-8 w-8 object-contain"
+            className="h-10 w-10 object-contain"
           />
           <div>
-            <div className="text-sm font-semibold leading-none">RIPARO</div>
-            <div className="text-[10px] text-white/70 leading-none mt-0.5">
+            <div className="text-lg font-bold leading-none">RIPARO</div>
+            <div className="text-xs text-white/70 leading-none mt-0.5">
               Report. Process. Resolve.
             </div>
           </div>
@@ -644,13 +644,13 @@ export default function AdminDashboard({
                 <img
                   src={RIPARO_Logo}
                   alt="RIPARO"
-                  className="h-10 w-10 object-contain"
+                  className="h-12 w-12 object-contain"
                 />
                 <div>
-                  <div className="text-base font-semibold leading-none tracking-wide">
+                  <div className="text-xl font-bold leading-none tracking-wide">
                     RIPARO
                   </div>
-                  <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                  <div className="text-sm text-white/70 leading-none mt-0.5">
                     Report. Process. Resolve.
                   </div>
                 </div>
@@ -721,20 +721,20 @@ export default function AdminDashboard({
                 <img
                   src={RIPARO_Logo}
                   alt="RIPARO"
-                  className="h-8 w-8 object-contain"
+                  className="h-10 w-10 object-contain mx-auto"
                 />
               ) : (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 px-2">
                   <img
                     src={RIPARO_Logo}
                     alt="RIPARO"
-                    className="h-10 w-10 object-contain"
+                    className="h-12 w-12 object-contain"
                   />
                   <div>
-                    <div className="text-base font-semibold leading-none tracking-wide">
+                    <div className="text-xl font-bold leading-none tracking-wide">
                       RIPARO
                     </div>
-                    <div className="text-[11px] text-white/70 leading-none mt-0.5">
+                    <div className="text-sm text-white/70 leading-none mt-0.5">
                       Report. Process. Resolve.
                     </div>
                   </div>
@@ -826,8 +826,8 @@ export default function AdminDashboard({
                 <div className="relative px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
                     <h1 className="text-xl font-bold tracking-tight">
-                      Welcome,{" "}
-                      {userRole === "mayor" ? "Hon. Mayor" : "Admin"} {userName}! 👋
+                      Welcome, {userRole === "mayor" ? "Hon. Mayor" : "Admin"}{" "}
+                      {userName}! 👋
                     </h1>
                     <p className="text-sm text-slate-600 flex items-center gap-2">
                       <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
