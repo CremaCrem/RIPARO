@@ -19,6 +19,38 @@ import {
   ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
 
+const BARANGAYS = [
+  "Adiangao",
+  "Bagacay",
+  "Bahay",
+  "Boclod",
+  "Calalahan",
+  "Calawit",
+  "Camagong",
+  "Catalotoan",
+  "Danlog",
+  "Del Carmen",
+  "Dolo",
+  "Kinalansan",
+  "Mampirao",
+  "Manzana",
+  "Minoro",
+  "Palale",
+  "Ponglon",
+  "Pugay",
+  "Sabang",
+  "Salogon",
+  "San Antonio",
+  "San Juan",
+  "San Vicente",
+  "Santa Cruz",
+  "Soledad",
+  "Tagas",
+  "Tambangan",
+  "Telegrafo",
+  "Tominawog",
+];
+
 type TabKey = "dashboard" | "submit" | "track" | "profile" | "help";
 
 // API report shape
@@ -1867,7 +1899,6 @@ function EditProfile({
       "email",
       "mobile_number",
       "barangay",
-      "zone",
       "password",
     ] as const;
     const hasChange = keys.some(
@@ -2001,22 +2032,19 @@ function EditProfile({
 
         <label className="block sm:col-span-2">
           <span className="mb-1 block text-sm text-slate-700">Barangay</span>
-          <input
+          <select
             name="barangay"
             value={form.barangay}
-            onChange={onChange}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 focus:border-slate-400"
-          />
-        </label>
-
-        <label className="block sm:col-span-1">
-          <span className="mb-1 block text-sm text-slate-700">Zone</span>
-          <input
-            name="zone"
-            value={form.zone}
-            onChange={onChange}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 placeholder-slate-400 outline-none ring-0 focus:border-slate-400"
-          />
+            onChange={onChange as any}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none ring-0 focus:border-slate-400"
+          >
+            <option value="">Select Barangay</option>
+            {BARANGAYS.map((bg) => (
+              <option key={bg} value={bg}>
+                {bg}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label

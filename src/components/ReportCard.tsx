@@ -47,8 +47,40 @@ export default function ReportCard({
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm text-left hover:ring-2 hover:ring-[#0038A8]/20 focus:outline-none transition-all duration-200 hover:shadow-md">
       <div className="h-1 w-full rounded-t-xl bg-[#0038A8]" />
       <div className="px-3 sm:px-5 pt-3 sm:pt-4">
+        {afterUrl && (
+          <div className="mb-2 flex items-center justify-end gap-1">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAfter(false);
+              }}
+              className={`px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-lg border transition-all duration-200 ${
+                !showAfter
+                  ? "bg-[#0038A8] text-white border-[#0038A8] shadow-sm"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+              }`}
+            >
+              Before
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowAfter(true);
+              }}
+              className={`px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium rounded-lg border transition-all duration-200 ${
+                showAfter
+                  ? "bg-[#0038A8] text-white border-[#0038A8] shadow-sm"
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
+              }`}
+            >
+              After
+            </button>
+          </div>
+        )}
         <div
-          className="h-24 sm:h-28 w-full rounded-lg bg-slate-200/80 overflow-hidden relative cursor-zoom-in"
+          className="h-48 sm:h-64 w-full rounded-lg bg-slate-200/80 overflow-hidden relative cursor-zoom-in"
           onClick={(e) => {
             e.stopPropagation();
             const url = showAfter && afterUrl ? afterUrl : thumbUrl;
@@ -69,34 +101,6 @@ export default function ReportCard({
                 className="h-full w-full object-cover"
               />
             )
-          )}
-          {afterUrl && (
-            <div className="absolute left-1 top-1 sm:left-2 sm:top-2 flex items-center gap-0.5 sm:gap-1 rounded-md bg-black/40 p-0.5">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAfter(false);
-                }}
-                className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] rounded ${
-                  !showAfter ? "bg-white text-slate-900" : "text-white"
-                }`}
-              >
-                Before
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAfter(true);
-                }}
-                className={`px-1.5 sm:px-2 py-0.5 text-[8px] sm:text-[10px] rounded ${
-                  showAfter ? "bg-white text-slate-900" : "text-white"
-                }`}
-              >
-                After
-              </button>
-            </div>
           )}
         </div>
       </div>

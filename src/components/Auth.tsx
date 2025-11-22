@@ -17,6 +17,38 @@ type FormData = {
   zone: string;
 };
 
+const BARANGAYS = [
+  "Adiangao",
+  "Bagacay",
+  "Bahay",
+  "Boclod",
+  "Calalahan",
+  "Calawit",
+  "Camagong",
+  "Catalotoan",
+  "Danlog",
+  "Del Carmen",
+  "Dolo",
+  "Kinalansan",
+  "Mampirao",
+  "Manzana",
+  "Minoro",
+  "Palale",
+  "Ponglon",
+  "Pugay",
+  "Sabang",
+  "Salogon",
+  "San Antonio",
+  "San Juan",
+  "San Vicente",
+  "Santa Cruz",
+  "Soledad",
+  "Tagas",
+  "Tambangan",
+  "Telegrafo",
+  "Tominawog",
+];
+
 export default function Auth({
   onAuthenticated,
   role = "citizen",
@@ -219,7 +251,6 @@ export default function Auth({
           "password",
           "mobile_number",
           "barangay",
-          "zone",
         ] as const;
         const localErrors: Record<string, string> = {};
         const missingFlags: Record<string, boolean> = {};
@@ -725,31 +756,48 @@ export default function Auth({
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <Input
-                            label="Barangay"
-                            type="text"
-                            placeholder="San Jose"
-                            value={formData.barangay}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                barangay: e.target.value,
-                              })
-                            }
-                            error={errors.barangay}
-                            requiredAsterisk
-                          />
-                          <Input
-                            label="Zone"
-                            type="text"
-                            placeholder="Zone 1"
-                            value={formData.zone}
-                            onChange={(e) =>
-                              setFormData({ ...formData, zone: e.target.value })
-                            }
-                            error={errors.zone}
-                            requiredAsterisk
-                          />
+                          <div className="space-y-2 md:col-span-2">
+                            <label className="block text-sm font-medium text-slate-700">
+                              Barangay <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              value={formData.barangay}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  barangay: e.target.value,
+                                })
+                              }
+                              className={`w-full rounded-lg border px-3 py-2 text-sm text-slate-800 outline-none transition-all duration-200 focus:ring-2 focus:ring-[#0038A8]/20 ${
+                                errors.barangay
+                                  ? "border-red-400 bg-red-50 focus:border-red-400"
+                                  : "border-slate-300 bg-white focus:border-[#0038A8]"
+                              }`}
+                            >
+                              <option value="">Select Barangay</option>
+                              {BARANGAYS.map((bg) => (
+                                <option key={bg} value={bg}>
+                                  {bg}
+                                </option>
+                              ))}
+                            </select>
+                            {errors.barangay && (
+                              <p className="text-sm text-red-600 flex items-center gap-1">
+                                <svg
+                                  className="h-4 w-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {errors.barangay}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="space-y-2">
