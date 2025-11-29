@@ -199,7 +199,7 @@ export default function MayorDashboard({
       | "infrastructure"
       | "sanitation"
       | "community_welfare"
-      | "behavoural_concerns";
+      | "behavioural_concerns";
     date_from: string;
     date_to: string;
   }>({ status: "", type: "", date_from: "", date_to: "" });
@@ -1009,8 +1009,8 @@ export default function MayorDashboard({
                         <option value="community_welfare">
                           Community welfare
                         </option>
-                        <option value="behavoural_concerns">
-                          Behavoural concerns
+                        <option value="behavioural_concerns">
+                          Behavioural concerns
                         </option>
                       </select>
                     </div>
@@ -1083,7 +1083,7 @@ export default function MayorDashboard({
                           <th className="py-2">Date Submitted</th>
                           <th className="py-2">Category</th>
                           <th className="py-2">Status</th>
-                          <th className="py-2">Actions</th>
+                          <th className="py-2">Details</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1307,7 +1307,7 @@ export default function MayorDashboard({
                           Barangay/Zone
                         </th>
                         <th className="py-2">Status</th>
-                        <th className="py-2">Actions</th>
+                        <th className="py-2">Details</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1419,7 +1419,7 @@ export default function MayorDashboard({
                         <th className="py-2">Requested At</th>
                         <th className="py-2">User</th>
                         <th className="py-2 hidden md:table-cell">Summary</th>
-                        <th className="py-2">Actions</th>
+                        <th className="py-2">Details</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2249,7 +2249,31 @@ function ReportDetailsModal({
           </div>
         </div>
         <div>
-          <div className="text-slate-600">Description</div>
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-slate-600">Description</div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => {
+                  const text = encodeURIComponent(localReport.description);
+                  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}`, '_blank');
+                }}
+                className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
+                title="Translate to English"
+              >
+                🇺🇸 EN
+              </button>
+              <button
+                onClick={() => {
+                  const text = encodeURIComponent(localReport.description);
+                  window.open(`https://translate.google.com/?sl=auto&tl=tl&text=${text}`, '_blank');
+                }}
+                className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
+                title="Translate to Tagalog"
+              >
+                🇵🇭 TL
+              </button>
+            </div>
+          </div>
           <div className="text-slate-800 whitespace-pre-wrap">
             {localReport.description}
           </div>

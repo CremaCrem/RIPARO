@@ -812,9 +812,33 @@ export default function CitizenDashboard({
 
               {/* Description Card */}
               <div className="bg-white rounded-xl border border-slate-200 p-4">
-                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
-                  Description
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
+                    Description
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => {
+                        const text = encodeURIComponent(detailsReport.description);
+                        window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}`, '_blank');
+                      }}
+                      className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
+                      title="Translate to English"
+                    >
+                      🇺🇸 EN
+                    </button>
+                    <button
+                      onClick={() => {
+                        const text = encodeURIComponent(detailsReport.description);
+                        window.open(`https://translate.google.com/?sl=auto&tl=tl&text=${text}`, '_blank');
+                      }}
+                      className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
+                      title="Translate to Tagalog"
+                    >
+                      🇵🇭 TL
+                    </button>
+                  </div>
                 </h4>
                 <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
                   {detailsReport.description}
@@ -947,7 +971,7 @@ export default function CitizenDashboard({
                       className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-r from-[#0038A8] to-[#2563eb] hover:from-[#0038A8]/90 hover:to-[#2563eb]/90 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       <ChatBubbleLeftRightIcon className="h-3 w-3" />
-                      Send Feedback
+                      Send Message
                     </button>
                   </div>
                 ) : (
@@ -1412,7 +1436,7 @@ function SubmitReport({
             <option value="infrastructure">Infrastructure</option>
             <option value="sanitation">Sanitation</option>
             <option value="community_welfare">Community welfare</option>
-            <option value="behavoural_concerns">Behavoural concerns</option>
+            <option value="behavioural_concerns">Behavioural concerns</option>
           </select>
         </label>
 
@@ -1689,8 +1713,8 @@ function TrackFeedback({
                     <option value="infrastructure">Infrastructure</option>
                     <option value="sanitation">Sanitation</option>
                     <option value="community_welfare">Community welfare</option>
-                    <option value="behavoural_concerns">
-                      Behavioral concerns
+                    <option value="behavioural_concerns">
+                      Behavioural concerns
                     </option>
                   </select>
                 </div>
@@ -1737,7 +1761,7 @@ function TrackFeedback({
           <table className="w-full text-sm">
             <thead className="text-left text-slate-600">
               <tr>
-                <th className="py-2 text-xs sm:text-sm">Submission ID</th>
+                <th className="py-2 text-xs sm:text-sm">Ticket ID</th>
                 <th className="py-2 text-xs sm:text-sm hidden sm:table-cell">
                   Date Submitted
                 </th>
@@ -1746,7 +1770,7 @@ function TrackFeedback({
                   Address
                 </th>
                 <th className="py-2 text-xs sm:text-sm">Status</th>
-                <th className="py-2 text-xs sm:text-sm">Actions</th>
+                <th className="py-2 text-xs sm:text-sm">Details</th>
               </tr>
             </thead>
             <tbody>
@@ -2296,7 +2320,7 @@ function ReportFeedbackForm({
     <div className="space-y-3">
       {/* Header with close button */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold text-slate-700">Send Feedback</h4>
+        <h4 className="text-sm font-semibold text-slate-700">Send Message</h4>
         <button
           onClick={onClose}
           className="text-slate-400 hover:text-slate-600 transition-colors"
