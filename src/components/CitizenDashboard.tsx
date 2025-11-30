@@ -70,6 +70,8 @@ type ApiReport = {
   updated_at: string;
   resolved_by?: number | null;
   resolved_at?: string | null;
+  rejection_reason?: string | null;
+  resolution_message?: string | null;
   resolver?: {
     id: number;
     first_name: string;
@@ -812,38 +814,40 @@ export default function CitizenDashboard({
 
               {/* Description Card */}
               <div className="bg-white rounded-xl border border-slate-200 p-4">
-                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
-                    Description
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        const text = encodeURIComponent(detailsReport.description);
-                        window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}`, '_blank');
-                      }}
-                      className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
-                      title="Translate to English"
-                    >
-                      🇺🇸 EN
-                    </button>
-                    <button
-                      onClick={() => {
-                        const text = encodeURIComponent(detailsReport.description);
-                        window.open(`https://translate.google.com/?sl=auto&tl=tl&text=${text}`, '_blank');
-                      }}
-                      className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
-                      title="Translate to Tagalog"
-                    >
-                      🇵🇭 TL
-                    </button>
-                  </div>
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#0038A8] rounded-full" />
+                  Description
                 </h4>
                 <div className="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
                   {detailsReport.description}
                 </div>
               </div>
+
+              {/* Rejection Reason - shown when report is rejected */}
+              {detailsReport.progress === "rejected" && detailsReport.rejection_reason && (
+                <div className="bg-red-50 rounded-xl border border-red-200 p-4">
+                  <h4 className="text-sm font-semibold text-red-700 mb-2 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    Rejection Reason
+                  </h4>
+                  <div className="text-sm text-red-800 leading-relaxed whitespace-pre-wrap">
+                    {detailsReport.rejection_reason}
+                  </div>
+                </div>
+              )}
+
+              {/* Resolution Message - shown when report is resolved */}
+              {detailsReport.progress === "resolved" && detailsReport.resolution_message && (
+                <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-4">
+                  <h4 className="text-sm font-semibold text-emerald-700 mb-2 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                    Resolution Message
+                  </h4>
+                  <div className="text-sm text-emerald-800 leading-relaxed whitespace-pre-wrap">
+                    {detailsReport.resolution_message}
+                  </div>
+                </div>
+              )}
 
               {/* Progress Timeline */}
               <div className="bg-white rounded-xl border border-slate-200 p-4">

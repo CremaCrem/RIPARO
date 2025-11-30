@@ -101,6 +101,10 @@ type UserRow = {
   verification_status: "pending" | "verified" | "rejected";
   id_document_path?: string | null;
   created_at: string;
+  last_active_at?: string | null;
+  is_active?: boolean;
+  deactivated_at?: string | null;
+  deactivated_by?: number | null;
 };
 
 export default function AdminDashboard({
@@ -1309,7 +1313,9 @@ export default function AdminDashboard({
                         <th className="py-2 hidden md:table-cell">
                           Barangay/Zone
                         </th>
+                        <th className="py-2 hidden lg:table-cell">Last Active</th>
                         <th className="py-2">Status</th>
+                        <th className="py-2 hidden lg:table-cell">Account</th>
                         <th className="py-2">Details</th>
                       </tr>
                     </thead>
@@ -1338,6 +1344,11 @@ export default function AdminDashboard({
                           <td className="py-2 hidden md:table-cell">
                             {u.barangay || ""} {u.zone ? `• ${u.zone}` : ""}
                           </td>
+                          <td className="py-2 hidden lg:table-cell text-slate-500">
+                            {u.last_active_at
+                              ? new Date(u.last_active_at).toLocaleDateString()
+                              : "Never"}
+                          </td>
                           <td className="py-2">
                             <span
                               className={`inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2 sm:px-3 py-1 text-[10px] sm:text-[12px] ${
@@ -1349,6 +1360,22 @@ export default function AdminDashboard({
                               }`}
                             >
                               {u.verification_status}
+                            </span>
+                          </td>
+                          <td className="py-2 hidden lg:table-cell">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] ${
+                                u.is_active !== false
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  u.is_active !== false ? "bg-emerald-500" : "bg-red-500"
+                                }`}
+                              />
+                              {u.is_active !== false ? "Active" : "Deactivated"}
                             </span>
                           </td>
                           <td className="py-2">
@@ -1963,6 +1990,7 @@ function UserDetailsModal({
   onUpdated: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [localUser, setLocalUser] = useState(user);
 
   const act = async (action: "verify" | "reject" | "pending") => {
     try {
@@ -1986,12 +2014,43 @@ function UserDetailsModal({
     }
   };
 
+  const toggleActive = async (action: "deactivate" | "activate") => {
+    try {
+      setSaving(true);
+      const token = localStorage.getItem("auth_token") || "";
+      const res = await fetch(`${API_URL}/users/${user.id}/toggle-active`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed");
+      setLocalUser((prev) => ({
+        ...prev,
+        is_active: action === "activate",
+        deactivated_at: action === "deactivate" ? new Date().toISOString() : null,
+      }));
+      onUpdated();
+    } catch (e) {
+      // simple swallow
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const isVerified = localUser.verification_status === "verified";
+  const isActive = localUser.is_active !== false;
+
   return (
     <Modal
-      title={`User: ${user.first_name} ${user.last_name}`}
+      title={`User: ${localUser.first_name} ${localUser.last_name}`}
       onClose={onClose}
+      size="lg"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             className="rounded-md bg-slate-200 px-3 py-2"
             onClick={onClose}
@@ -1999,6 +2058,25 @@ function UserDetailsModal({
           >
             Close
           </button>
+          {isActive ? (
+            <button
+              className="rounded-md bg-orange-600 px-3 py-2 text-white"
+              onClick={() => toggleActive("deactivate")}
+              disabled={saving}
+              title="Deactivate this user account"
+            >
+              Deactivate
+            </button>
+          ) : (
+            <button
+              className="rounded-md bg-cyan-600 px-3 py-2 text-white"
+              onClick={() => toggleActive("activate")}
+              disabled={saving}
+              title="Activate this user account"
+            >
+              Activate
+            </button>
+          )}
           <button
             className="rounded-md bg-amber-500 px-3 py-2 text-white"
             onClick={() => act("pending")}
@@ -2014,43 +2092,91 @@ function UserDetailsModal({
             Reject
           </button>
           <button
-            className="rounded-md bg-emerald-600 px-3 py-2 text-white"
+            className={`rounded-md px-3 py-2 text-white ${
+              isVerified
+                ? "bg-emerald-400 cursor-not-allowed"
+                : "bg-emerald-600"
+            }`}
             onClick={() => act("verify")}
-            disabled={saving}
+            disabled={saving || isVerified}
+            title={isVerified ? "User is already verified" : "Verify this user"}
           >
-            Verify
+            {isVerified ? "Verified ✓" : "Verify"}
           </button>
         </div>
       }
     >
       <div className="space-y-3 text-sm">
+        {/* Account Status Banner */}
+        {!isActive && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex items-center gap-2">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-red-700 font-medium">
+              This account is deactivated
+              {localUser.deactivated_at && (
+                <span className="font-normal text-red-600">
+                  {" "}
+                  (since {new Date(localUser.deactivated_at).toLocaleDateString()})
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <div className="text-slate-600">Email</div>
-            <div className="font-medium">{user.email}</div>
+            <div className="font-medium">{localUser.email}</div>
           </div>
           <div>
             <div className="text-slate-600">Mobile</div>
-            <div className="font-medium">{user.mobile_number || "-"}</div>
+            <div className="font-medium">{localUser.mobile_number || "-"}</div>
           </div>
           <div>
             <div className="text-slate-600">Barangay / Zone</div>
             <div className="font-medium">
-              {user.barangay || ""} {user.zone ? `• ${user.zone}` : ""}
+              {localUser.barangay || ""} {localUser.zone ? `• ${localUser.zone}` : ""}
             </div>
           </div>
           <div>
             <div className="text-slate-600">Registered</div>
             <div className="font-medium">
-              {new Date(user.created_at).toLocaleString()}
+              {new Date(localUser.created_at).toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Last Active</div>
+            <div className="font-medium">
+              {localUser.last_active_at
+                ? new Date(localUser.last_active_at).toLocaleString()
+                : "Never logged in"}
+            </div>
+          </div>
+          <div>
+            <div className="text-slate-600">Account Status</div>
+            <div className="font-medium">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs ${
+                  isActive
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isActive ? "bg-emerald-500" : "bg-red-500"
+                  }`}
+                />
+                {isActive ? "Active" : "Deactivated"}
+              </span>
             </div>
           </div>
         </div>
         <div>
           <div className="text-slate-600 mb-1">ID Document</div>
-          {user.id_document_path ? (
+          {localUser.id_document_path ? (
             <img
-              src={resolveAssetUrl(user.id_document_path)}
+              src={resolveAssetUrl(localUser.id_document_path)}
               alt="ID"
               className="h-40 rounded-md border border-slate-200 object-cover"
             />
@@ -2080,7 +2206,11 @@ function ReportDetailsModal({
   const [uploading, setUploading] = useState(false);
   const [localReport, setLocalReport] = useState(report);
   const originalProgress = useRef<ReportProgress>(report.progress);
-  const hasChanges = progress !== originalProgress.current;
+  const [rejectionReason, setRejectionReason] = useState((report as any).rejection_reason || "");
+  const [resolutionMessage, setResolutionMessage] = useState((report as any).resolution_message || "");
+  const hasChanges = progress !== originalProgress.current || 
+    (progress === "rejected" && rejectionReason !== ((report as any).rejection_reason || "")) ||
+    (progress === "resolved" && resolutionMessage !== ((report as any).resolution_message || ""));
 
   useEffect(() => {
     if (success) {
@@ -2102,18 +2232,32 @@ function ReportDetailsModal({
       setError(null);
       setSuccess(null);
       const token = localStorage.getItem("auth_token") || "";
+      
+      const payload: any = { progress };
+      if (progress === "rejected") {
+        payload.rejection_reason = rejectionReason;
+      }
+      if (progress === "resolved") {
+        payload.resolution_message = resolutionMessage;
+      }
+      
       const res = await fetch(`${API_URL}/reports/${report.id}/progress`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ progress }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Failed to update");
       setSuccess("✅ Report status updated successfully!");
-      setLocalReport((prev) => ({ ...prev, progress }));
+      setLocalReport((prev) => ({ 
+        ...prev, 
+        progress,
+        rejection_reason: progress === "rejected" ? rejectionReason : prev.rejection_reason,
+        resolution_message: progress === "resolved" ? resolutionMessage : prev.resolution_message,
+      } as any));
       onProgressChanged(progress);
       originalProgress.current = progress;
     } catch (e: any) {
@@ -2238,6 +2382,39 @@ function ReportDetailsModal({
             </div>
           </div>
         </div>
+
+        {/* Rejection Reason - shown when status is rejected */}
+        {progress === "rejected" && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <label className="block text-red-700 font-medium mb-2">
+              Rejection Reason
+            </label>
+            <textarea
+              className="w-full rounded-md border border-red-300 bg-white px-3 py-2 text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200"
+              placeholder="Please provide a reason for rejecting this report..."
+              rows={3}
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* Resolution Message - shown when status is resolved */}
+        {progress === "resolved" && (
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+            <label className="block text-emerald-700 font-medium mb-2">
+              Resolution Message
+            </label>
+            <textarea
+              className="w-full rounded-md border border-emerald-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+              placeholder="Provide a message about how this report was resolved..."
+              rows={3}
+              value={resolutionMessage}
+              onChange={(e) => setResolutionMessage(e.target.value)}
+            />
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="text-slate-600">Address</div>
@@ -2251,31 +2428,7 @@ function ReportDetailsModal({
           </div>
         </div>
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <div className="text-slate-600">Description</div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => {
-                  const text = encodeURIComponent(localReport.description);
-                  window.open(`https://translate.google.com/?sl=auto&tl=en&text=${text}`, '_blank');
-                }}
-                className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
-                title="Translate to English"
-              >
-                🇺🇸 EN
-              </button>
-              <button
-                onClick={() => {
-                  const text = encodeURIComponent(localReport.description);
-                  window.open(`https://translate.google.com/?sl=auto&tl=tl&text=${text}`, '_blank');
-                }}
-                className="px-2 py-1 text-xs font-medium text-[#0038A8] hover:bg-[#0038A8]/10 rounded transition-colors"
-                title="Translate to Tagalog"
-              >
-                🇵🇭 TL
-              </button>
-            </div>
-          </div>
+          <div className="text-slate-600 mb-1">Description</div>
           <div className="text-slate-800 whitespace-pre-wrap">
             {localReport.description}
           </div>

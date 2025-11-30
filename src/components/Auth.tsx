@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { API_URL } from "../config";
 import bgSanJose from "../assets/san_jose_bg.jpg";
 import RIPARO_Logo from "../assets/RIPARO_Logo.png";
+import Modal from "./Modal";
 
 type Mode = "login" | "signup";
 
@@ -77,6 +78,7 @@ export default function Auth({
   const [idDoc, setIdDoc] = useState<File | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showDeactivatedModal, setShowDeactivatedModal] = useState(false);
 
   const allowSignup = !loginOnly && role === "citizen";
 
@@ -235,6 +237,8 @@ export default function Auth({
             setErrors({ general: "Your account is still under review." });
           } else if (data?.status === "rejected") {
             setErrors({ general: "Your registration was rejected." });
+          } else if (data?.status === "deactivated") {
+            setShowDeactivatedModal(true);
           } else if (data?.errors) {
             setErrors(data.errors);
           } else {
@@ -1075,6 +1079,56 @@ export default function Auth({
           </div>
         </div>
       </footer>
+
+      {/* Deactivated Account Modal */}
+      {showDeactivatedModal && (
+        <Modal
+          title="Account Deactivated"
+          onClose={() => setShowDeactivatedModal(false)}
+          actions={
+            <button
+              className="rounded-md px-4 py-2 bg-[#0038A8] text-white hover:bg-[#0038A8]/90 transition-colors"
+              onClick={() => setShowDeactivatedModal(false)}
+            >
+              I Understand
+            </button>
+          }
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-slate-700">
+                Your account has been deactivated by an administrator.
+              </p>
+              <p className="text-slate-600 mt-2">
+                Please contact customer support for assistance with reactivating your account.
+              </p>
+              <div className="mt-4 p-3 bg-slate-100 rounded-lg">
+                <p className="text-sm text-slate-600">
+                  <strong>Contact Support:</strong>
+                </p>
+                <p className="text-sm text-[#0038A8]">support@riparo.gov.ph</p>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
