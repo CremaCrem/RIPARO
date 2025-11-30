@@ -79,6 +79,8 @@ type ReportDetail = ReportRow & {
   photos?: string[] | null;
   description: string;
   date_generated?: string | null;
+  rejection_reason?: string | null;
+  resolution_message?: string | null;
 };
 
 type FeedbackRow = {
@@ -2203,11 +2205,11 @@ function ReportDetailsModal({
   const [uploading, setUploading] = useState(false);
   const [localReport, setLocalReport] = useState(report);
   const originalProgress = useRef<ReportProgress>(report.progress);
-  const [rejectionReason, setRejectionReason] = useState((report as any).rejection_reason || "");
-  const [resolutionMessage, setResolutionMessage] = useState((report as any).resolution_message || "");
+  const [rejectionReason, setRejectionReason] = useState(report.rejection_reason || "");
+  const [resolutionMessage, setResolutionMessage] = useState(report.resolution_message || "");
   const hasChanges = progress !== originalProgress.current || 
-    (progress === "rejected" && rejectionReason !== ((report as any).rejection_reason || "")) ||
-    (progress === "resolved" && resolutionMessage !== ((report as any).resolution_message || ""));
+    (progress === "rejected" && rejectionReason !== (report.rejection_reason || "")) ||
+    (progress === "resolved" && resolutionMessage !== (report.resolution_message || ""));
 
   useEffect(() => {
     if (success) {
@@ -2254,7 +2256,7 @@ function ReportDetailsModal({
         progress,
         rejection_reason: progress === "rejected" ? rejectionReason : prev.rejection_reason,
         resolution_message: progress === "resolved" ? resolutionMessage : prev.resolution_message,
-      } as any));
+      }));
       onProgressChanged(progress);
       originalProgress.current = progress;
     } catch (e: any) {
